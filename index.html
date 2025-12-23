@@ -3,125 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>NotAldim | Dijital Defterim</title>
+    <title>NotAldim | V33</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-        :root { --ig-blue: #0095f6; --ig-bg: #000; --ig-card: #121212; --admin-red: #ed4956; --border: #262626; }
-        * { box-sizing: border-box; }
-        body { background: var(--ig-bg); color: white; font-family: 'Roboto', sans-serif; margin: 0; padding-bottom: 75px; overflow-x: hidden; }
-
-        /* YÜKLEME PANELİ */
-        #upload-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+        :root { --blue: #0095f6; --bg: #000; --card: #121212; --border: #262626; }
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 75px; }
+        
+        /* YÜKLEME EKRANI - TASARIMI BOZMAZ */
+        #loading-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10000;
         }
-        .progress-card { width: 85%; max-width: 320px; background: #1a1a1a; padding: 25px; border-radius: 15px; border: 1px solid var(--border); text-align: center; }
-        #percent-text { font-size: 35px; font-weight: bold; color: var(--ig-blue); }
-        .bar-container { width: 100%; background: #333; height: 10px; border-radius: 5px; overflow: hidden; margin: 15px 0; }
-        #bar-fill { width: 0%; height: 100%; background: var(--ig-blue); transition: width 0.2s; }
+        .loading-box { width: 80%; max-width: 300px; text-align: center; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid var(--border); }
+        #percent { font-size: 30px; font-weight: bold; color: var(--blue); }
+        .bar-bg { width: 100%; background: #333; height: 10px; border-radius: 5px; margin: 15px 0; overflow: hidden; }
+        #bar-fill { width: 0%; height: 100%; background: var(--blue); transition: width 0.2s; }
 
-        /* SAYFALAR */
-        .page { display: none; padding: 20px; max-width: 600px; margin: 0 auto; }
+        /* ARAYÜZ */
+        .page { display: none; padding: 20px; max-width: 500px; margin: 0 auto; }
         .page.active { display: block; }
-        .auth-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-        .auth-card { background: var(--ig-card); border: 1px solid var(--border); padding: 30px; border-radius: 12px; width: 100%; max-width: 350px; text-align: center; }
-        
-        input, textarea, select { width: 100%; background: #121212; border: 1px solid #363636; padding: 12px; border-radius: 8px; color: white; margin-bottom: 12px; font-size: 14px; outline: none; }
-        button { width: 100%; background: var(--ig-blue); border: none; border-radius: 8px; color: white; padding: 12px; font-weight: bold; cursor: pointer; }
-        .link-text { color: var(--ig-blue); font-size: 13px; cursor: pointer; margin-top: 15px; display: inline-block; }
-
-        .note-card { background: var(--ig-card); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; }
-        .media-content { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 450px; object-fit: contain; }
-        
-        /* ALT MENÜ */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; }
-        .nav-item { color: white; font-size: 24px; cursor: pointer; opacity: 0.4; }
-        .nav-item.active { opacity: 1; color: var(--ig-blue); }
-
-        .admin-btn { position: absolute; top: 10px; right: 10px; color: var(--admin-red); cursor: pointer; }
-        .hidden { display: none !important; }
+        .auth-card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 12px; text-align: center; margin-top: 50px; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid #363636; padding: 12px; border-radius: 8px; color: white; margin-bottom: 10px; }
+        button { width: 100%; background: var(--blue); border: none; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+        .note-card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; }
+        .media-content { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 400px; object-fit: contain; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 15px 0; }
+        .nav-btn { font-size: 24px; cursor: pointer; opacity: 0.5; }
+        .nav-btn.active { opacity: 1; color: var(--blue); }
+        .del-btn { position: absolute; top: 10px; right: 10px; color: #ed4956; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="upload-overlay">
-        <div class="progress-card">
-            <div id="percent-text">0%</div>
-            <div class="bar-container"><div id="bar-fill"></div></div>
-            <p id="status-msg" style="font-size: 14px; color: #8e8e8e;">Dosya Hazırlanıyor...</p>
+    <div id="loading-overlay">
+        <div class="loading-box">
+            <div id="percent">0%</div>
+            <div class="bar-bg"><div id="bar-fill"></div></div>
+            <p id="load-status" style="font-size:12px;">Dosya Hazırlanıyor...</p>
         </div>
     </div>
 
-    <div id="auth-pages">
-        <div id="login-page" class="auth-container page active">
+    <div id="auth-section">
+        <div id="login-p" class="page active">
             <div class="auth-card">
-                <h1 style="font-style: italic;">NotAldim</h1>
-                <input type="text" id="l-user" placeholder="Kullanıcı Adı">
-                <input type="password" id="l-pass" placeholder="Şifre">
+                <h1 style="font-style:italic;">NotAldim</h1>
+                <input type="text" id="l-u" placeholder="Kullanıcı Adı">
+                <input type="password" id="l-p" placeholder="Şifre">
                 <button onclick="login()">Giriş Yap</button>
-                <div class="link-text" onclick="showAuth('register-page')">Yeni hesap oluştur</div><br>
-                <div class="link-text" onclick="showAuth('forgot-page')" style="color:#8e8e8e;">Şifremi unuttum</div>
+                <p onclick="showP('reg-p')" style="color:var(--blue); cursor:pointer; font-size:13px; margin-top:15px;">Yeni Hesap Oluştur</p>
+                <p onclick="showP('forgot-p')" style="color:#8e8e8e; cursor:pointer; font-size:12px;">Şifremi Unuttum</p>
             </div>
         </div>
 
-        <div id="register-page" class="auth-container page">
+        <div id="reg-p" class="page">
             <div class="auth-card">
                 <h2>Kayıt Ol</h2>
-                <input type="text" id="r-user" placeholder="Kullanıcı Adı">
-                <input type="email" id="r-email" placeholder="E-posta">
-                <input type="password" id="r-pass" placeholder="Şifre">
-                <input type="text" id="r-img" placeholder="Profil Foto Link (URL)">
+                <input type="text" id="r-u" placeholder="Kullanıcı Adı">
+                <input type="email" id="r-e" placeholder="E-posta">
+                <input type="password" id="r-p" placeholder="Şifre">
+                <input type="text" id="r-i" placeholder="Profil Foto Link (Opsiyonel)">
                 <button onclick="register()">Kayıt Ol</button>
-                <div class="link-text" onclick="showAuth('login-page')">Giriş sayfasına dön</div>
+                <p onclick="showP('login-p')" style="color:var(--blue); cursor:pointer;">Geri Dön</p>
             </div>
         </div>
 
-        <div id="forgot-page" class="auth-container page">
+        <div id="forgot-p" class="page">
             <div class="auth-card">
                 <h2>Şifre Kurtarma</h2>
-                <p style="font-size:12px; color:#8e8e8e;">E-posta adresini gir, şifreni gönderelim.</p>
-                <input type="email" id="f-email" placeholder="E-posta Adresin">
-                <button onclick="forgotPassword()">Şifre Gönder</button>
-                <div class="link-text" onclick="showAuth('login-page')">Geri Dön</div>
+                <input type="email" id="f-e" placeholder="E-posta Adresin">
+                <button onclick="forgot()">Şifre Gönder</button>
+                <p onclick="showP('login-p')" style="color:var(--blue); cursor:pointer;">Geri Dön</p>
             </div>
         </div>
     </div>
 
-    <div id="app" class="hidden">
-        <div id="page-home" class="page">
-            <h2>Akış</h2>
-            <div id="note-list"></div>
-        </div>
-        
-        <div id="page-add" class="page">
-            <h2>Paylaşım Yap</h2>
+    <div id="main-app" style="display:none;">
+        <div id="home-p" class="page"><h2>Akış</h2><div id="note-list"></div></div>
+        <div id="add-p" class="page">
+            <h2>Yeni Not</h2>
             <input type="text" id="nt-t" placeholder="Başlık">
-            <textarea id="nt-b" rows="4" placeholder="Bir şeyler yaz..."></textarea>
-            <select id="nt-type" onchange="toggleMedia()">
+            <textarea id="nt-b" placeholder="Mesajın..."></textarea>
+            <select id="nt-type" onchange="document.getElementById('f-in').style.display=this.value==='text'?'none':'block'">
                 <option value="text">Sadece Yazı</option>
                 <option value="image">Fotoğraf</option>
                 <option value="video">Video</option>
             </select>
-            <input type="file" id="media-file" class="hidden">
-            <button onclick="saveNote()">Paylaş</button>
+            <input type="file" id="f-in" style="display:none; margin-bottom:10px;">
+            <button onclick="save()">Paylaş</button>
         </div>
-
-        <div id="page-profile" class="page">
-            <div style="text-align:center;">
-                <img id="u-img" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid var(--ig-blue);">
-                <h3 id="u-name"></h3>
-                <p id="u-mail" style="color:#8e8e8e;"></p>
-                <button onclick="logout()" style="background:#333; margin-top:20px;">Çıkış Yap</button>
-            </div>
+        <div id="prof-p" class="page" style="text-align:center;">
+            <img id="u-img" style="width:100px; height:100px; border-radius:50%; border:2px solid var(--blue); margin-top:30px;">
+            <h3 id="u-name"></h3>
+            <button onclick="location.reload()" style="background:#333; margin-top:20px;">Çıkış Yap</button>
         </div>
 
         <div class="nav-bar">
-            <div class="nav-item active" onclick="nav('home', this)">🏠</div>
-            <div class="nav-item" onclick="nav('add', this)">➕</div>
-            <div class="nav-item" onclick="nav('profile', this)">👤</div>
+            <div class="nav-btn active" onclick="nav('home-p', this)">🏠</div>
+            <div class="nav-btn" onclick="nav('add-p', this)">➕</div>
+            <div class="nav-btn" onclick="nav('prof-p', this)">👤</div>
         </div>
     </div>
 
@@ -137,135 +119,99 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let currentUser = null;
+    let cur = null;
+    emailjs.init("5_6-mB_mYm1L8_E5X");
 
-    emailjs.init("5_6-mB_mYm1L8_E5X"); // EmailJS ID'n
-
-    function showAuth(id) {
-        document.querySelectorAll('.auth-container').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
+    function showP(id) { document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    function nav(id, el) { showP(id); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
 
     function register() {
-        const u = document.getElementById('r-user').value.trim().toLowerCase();
-        const e = document.getElementById('r-email').value.trim();
-        const p = document.getElementById('r-pass').value;
-        const i = document.getElementById('r-img').value || 'https://via.placeholder.com/100';
-        if(!u || !e || !p) return alert("Boş alan bırakma!");
-        
-        db.ref('users/' + u).set({ user: u, email: e, pass: p, img: i, role: 'user' }).then(() => {
-            alert("Kayıt başarılı! Giriş yapabilirsin.");
-            showAuth('login-page');
-        });
+        const u = document.getElementById('r-u').value.toLowerCase().trim();
+        const e = document.getElementById('r-e').value.trim();
+        const p = document.getElementById('r-p').value;
+        const i = document.getElementById('r-i').value || 'https://via.placeholder.com/100';
+        if(!u || !e || !p) return alert("Eksik bilgi!");
+        db.ref('users/'+u).set({user:u, email:e, pass:p, img:i, role:'user'}).then(()=>{ alert("Kaydoldun!"); showP('login-p'); });
     }
 
     function login() {
-        const u = document.getElementById('l-user').value.trim().toLowerCase();
-        const p = document.getElementById('l-pass').value.trim();
-        db.ref('users/' + u).once('value', s => {
+        const u = document.getElementById('l-u').value.toLowerCase().trim();
+        const p = document.getElementById('l-p').value;
+        db.ref('users/'+u).once('value', s => {
             const d = s.val();
-            if(d && d.pass === p) {
-                currentUser = d;
-                document.getElementById('auth-pages').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
+            if(d && d.pass == p) {
+                cur = d;
+                document.getElementById('auth-section').style.display='none';
+                document.getElementById('main-app').style.display='block';
                 document.getElementById('u-name').innerText = u;
                 document.getElementById('u-img').src = d.img;
-                document.getElementById('u-mail').innerText = d.email;
-                nav('home', document.querySelector('.nav-item'));
-                loadNotes();
-            } else { alert("Hatalı kullanıcı adı veya şifre!"); }
+                nav('home-p', document.querySelector('.nav-btn'));
+                load();
+            } else alert("Hata!");
         });
     }
 
-    function forgotPassword() {
-        const email = document.getElementById('f-email').value;
+    function forgot() {
+        const mail = document.getElementById('f-e').value;
         db.ref('users').once('value', s => {
-            let found = false;
-            s.forEach(userSnap => {
-                const d = userSnap.val();
-                if(d.email === email) {
-                    found = true;
-                    emailjs.send("service_x8fihv4", "template_p0y8vpa", {
-                        to_email: email,
-                        user_id: d.user,
-                        password: d.pass
-                    }).then(() => alert("Şifren e-posta adresine gönderildi!"));
+            s.forEach(u => {
+                if(u.val().email == mail) {
+                    emailjs.send("service_x8fihv4", "template_p0y8vpa", { to_email: mail, user_id: u.val().user, password: u.val().pass });
+                    alert("Şifren gönderildi!");
                 }
             });
-            if(!found) alert("Bu e-posta ile kayıtlı kullanıcı bulunamadı.");
         });
     }
 
-    async function saveNote() {
+    async function save() {
         const t = document.getElementById('nt-t').value;
         const b = document.getElementById('nt-b').value;
         const type = document.getElementById('nt-type').value;
-        const file = document.getElementById('media-file').files[0];
-        if(!t) return alert("Başlık şart!");
+        const file = document.getElementById('f-in').files[0];
+        if(!t) return alert("Başlık?");
 
-        const overlay = document.getElementById('upload-overlay');
-        const bar = document.getElementById('bar-fill');
-        const pTxt = document.getElementById('percent-text');
-        overlay.style.display = 'flex';
+        document.getElementById('loading-overlay').style.display='flex';
+        let media = "";
 
-        let mediaData = "";
-        if(type !== 'text' && file) {
-            mediaData = await new Promise((res) => {
+        if(type!=='text' && file) {
+            media = await new Promise(res => {
                 const r = new FileReader();
-                r.onprogress = (e) => {
+                r.onprogress = e => {
                     const p = Math.round((e.loaded/e.total)*100);
-                    bar.style.width = p+'%';
-                    pTxt.innerText = p+'%';
+                    document.getElementById('bar-fill').style.width = p+'%';
+                    document.getElementById('percent').innerText = p+'%';
                 };
                 r.onload = () => res(r.result);
                 r.readAsDataURL(file);
             });
         }
 
-        db.ref('users/'+currentUser.user+'/notes').once('value').then(s => {
+        document.getElementById('load-status').innerText = "Buluta Kaydediliyor...";
+        db.ref('users/'+cur.user+'/notes').once('value').then(s => {
             let n = s.val() || [];
-            n.push({ t, b, type, media: mediaData, date: new Date().toLocaleString() });
-            db.ref('users/'+currentUser.user+'/notes').set(n).then(() => {
-                overlay.style.display = 'none';
-                nav('home', document.querySelector('.nav-item'));
-                document.getElementById('nt-t').value = "";
-                document.getElementById('nt-b').value = "";
+            n.push({t, b, type, media, date: new Date().toLocaleString()});
+            db.ref('users/'+cur.user+'/notes').set(n).then(() => {
+                document.getElementById('loading-overlay').style.display='none';
+                nav('home-p', document.querySelector('.nav-btn'));
             });
         });
     }
 
-    function loadNotes() {
-        db.ref('users/'+currentUser.user+'/notes').on('value', s => {
+    function load() {
+        db.ref('users/'+cur.user+'/notes').on('value', s => {
             const n = s.val() || [];
-            document.getElementById('note-list').innerHTML = n.map((note, i) => `
+            document.getElementById('note-list').innerHTML = n.map((x, i) => `
                 <div class="note-card">
-                    ${currentUser.role === 'admin' ? `<span class="admin-btn" onclick="deleteNote(${i})">🗑️</span>` : ''}
-                    <b style="color:var(--ig-blue)">${note.t}</b><br>
-                    <small style="color:#555; font-size:10px;">${note.date || ''}</small>
-                    <p>${note.b}</p>
-                    ${note.type==='image' ? `<img src="${note.media}" class="media-content">` : ''}
-                    ${note.type==='video' ? `<video src="${note.media}" controls class="media-content"></video>` : ''}
+                    ${cur.role=='admin' ? `<span class="del-btn" onclick="del(${i})">🗑️</span>`:''}
+                    <b style="color:var(--blue)">${x.t}</b><br><small style="color:#555">${x.date || ''}</small>
+                    <p>${x.b}</p>
+                    ${x.type=='image'?`<img src="${x.media}" class="media-content">`:''}
+                    ${x.type=='video'?`<video src="${x.media}" controls class="media-content"></video>`:''}
                 </div>`).reverse().join('');
         });
     }
 
-    function deleteNote(index) {
-        if(confirm("Silinsin mi?")) {
-            db.ref('users/'+currentUser.user+'/notes').once('value').then(s => {
-                let n = s.val(); n.splice(index, 1);
-                db.ref('users/'+currentUser.user+'/notes').set(n);
-            });
-        }
-    }
-
-    function nav(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-'+id).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active');
-    }
-    function toggleMedia() { document.getElementById('media-file').classList.toggle('hidden', document.getElementById('nt-type').value === 'text'); }
-    function logout() { location.reload(); }
+    function del(i) { if(confirm("Sil?")) { db.ref('users/'+cur.user+'/notes').once('value').then(s => { let n = s.val(); n.splice(i,1); db.ref('users/'+cur.user+'/notes').set(n); }); } }
 </script>
 </body>
 </html>
