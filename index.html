@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>NotAldim | Dijital Defterim</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+        :root { --ig-blue: #0095f6; --ig-bg: #000; --ig-card: #121212; --admin-red: #ed4956; --success-green: #2ecc71; --warning-gold: #ffcc00; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--ig-bg); color: white; font-family: 'Roboto', sans-serif; margin: 0; padding-bottom: 75px; transition: 0.3s; }
+
+        /* Efektler & Zoom */
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+        .shake { animation: shake 0.4s; border: 1px solid var(--admin-red) !important; }
+        .success-flash { background: var(--success-green) !important; transition: 0.5s; }
+
+        /* Modal (Zoom Ekranı) */
+        .zoom-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .zoom-content { max-width: 100%; max-height: 90vh; border-radius: 8px; }
+
+        #broadcast-msg { background: #1a1a1a; border-bottom: 1px solid #333; padding: 12px; color: var(--warning-gold); text-align: center; font-size: 14px; font-weight: bold; position: sticky; top: 0; z-index: 999; }
+        .auth-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .auth-card { background: var(--ig-card); border: 1px solid #262626; padding: 30px; border-radius: 12px; width: 100%; max-width: 350px; text-align: center; }
+        input, textarea, select { width: 100%; background: #000; border: 1px solid #363636; padding: 12px; border-radius: 8px; color: white; margin-bottom: 10px; font-size: 14px; outline: none; }
+        button { width: 100%; background: var(--ig-blue); border: none; border-radius: 8px; color: white; padding: 12px; font-weight: bold; cursor: pointer; }
+
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 1px solid #262626; display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; }
+        .nav-item { color: white; font-size: 24px; cursor: pointer; opacity: 0.4; }
+        .nav-item.active { opacity: 1; color: var(--ig-blue); }
+
+        .page { display: none; padding: 20px; max-width: 600px; margin: 0 auto; animation: fadeIn 0.4s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .note-card { background: var(--ig-card); border: 1px solid #262626; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .media-content { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 350px; object-fit: contain; background: #000; cursor: pointer; }
+        
+        .admin-body { background: #0a0000 !important; }
+        .admin-box { background: #1a0a0a; border: 1px solid var(--admin-red); padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: left; }
+        .admin-user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .admin-user-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid #262626; }
+        .hidden { display: none !important; }
+        .btn-sm { width: auto; padding: 6px 12px; font-size: 11px; margin-right: 5px; margin-top: 5px; }
+    </style>
+</head>
+<body id="main-body">
+
+    <div id="zoomModal" class="zoom-modal" onclick="this.style.display='none'">
+        <div id="zoomInner"></div>
+    </div>
+
+    <div id="loading" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:none;align-items:center;justify-content:center;">BEKLEYİN...</div>
+    <div id="broadcast-msg" class="hidden"></div>
+
+    <div id="auth-pages">
+        <div id="login-page" class="auth-container">
+            <div class="auth-card" id="l-card">
+                <h1 style="font-style: italic; letter-spacing: -1px;">NotAldim</h1>
+                <input type="text" id="l-user" placeholder="Kullanıcı Adı" onkeydown="if(event.key==='Enter') login()">
+                <input type="password" id="l-pass" placeholder="Şifre" onkeydown="if(event.key==='Enter') login()">
+                <div style="display:flex; align-items:center; gap:5px; margin-bottom:15px; font-size:13px; color:#8e8e8e;"><input type="checkbox" id="l-rem" style="width:auto; margin:0;"> <label for="l-rem">Beni Hatırla</label></div>
+                <button onclick="login()">Giriş Yap</button>
+                <p style="font-size:12px; margin-top:15px; color:var(--ig-blue); cursor:pointer" onclick="switchAuth('forgot')">Şifremi Unuttum?</p>
+                <div style="margin-top: 20px; font-size: 14px;">Hesabın yok mu? <span style="color:var(--ig-blue); cursor:pointer" onclick="switchAuth('reg')">Kaydol</span></div>
+            </div>
+        </div>
+        <div id="reg-page" class="auth-container hidden">
+            <div class="auth-card"><h1>Kaydol</h1><input type="text" id="r-user" placeholder="Kullanıcı Adı"><input type="email" id="r-mail" placeholder="E-Posta"><input type="password" id="r-pass" placeholder="Şifre"><button onclick="register()">Kayıt Ol</button><p onclick="switchAuth('login')" style="cursor:pointer; font-size:14px; margin-top:15px;">Geri Dön</p></div>
+        </div>
+        <div id="forgot-page" class="auth-container hidden">
+            <div class="auth-card"><h2>Şifre Kurtar</h2><input type="text" id="f-user" placeholder="Kullanıcı Adı"><button onclick="sendForgotMail()">Şifreyi Gönder</button><p onclick="switchAuth('login')" style="cursor:pointer; font-size:14px; margin-top:15px;">Geri Dön</p></div>
+        </div>
+    </div>
+
+    <div id="app" class="hidden">
+        <div id="page-home" class="page active"><h2>Akış</h2><div id="note-list"></div></div>
+        
+        <div id="page-add" class="page">
+            <h2>Yeni Not</h2>
+            <select id="media-type" onchange="toggleMediaInput()">
+                <option value="text">Sadece Yazı</option>
+                <option value="image">Fotoğraf</option>
+                <option value="video">Video</option>
+            </select>
+            <input type="text" id="nt-t" placeholder="Başlık">
+            <textarea id="nt-b" rows="4" placeholder="İçerik..."></textarea>
+            <div id="media-upload-area" class="hidden"><input type="file" id="media-file" accept="image/*,video/*"></div>
+            <button onclick="saveNote()">Kaydet</button>
+        </div>
+
+        <div id="page-admin" class="page">
+            <h2 style="color:var(--admin-red)">🛡️ Yönetim & Üye Takibi</h2>
+            <div class="admin-box" style="background:#222; border-color:var(--warning-gold)">
+                <textarea id="admin-broadcast-input" placeholder="Tüm üyelere duyuru..."></textarea>
+                <button style="background:var(--warning-gold); color:black" onclick="sendGlobalBroadcast()">DUYURU YAYINLA</button>
+            </div>
+            <div id="admin-users-list"></div>
+        </div>
+
+        <div id="page-profile" class="page">
+            <div style="text-align: center;">
+                <img id="u-img" class="profile-img" src="" onclick="document.getElementById('p-file').click()">
+                <input type="file" id="p-file" class="hidden" accept="image/*" onchange="updateProfileImg(this)">
+                <h3 id="u-name-display"></h3>
+                <button class="btn-sm" style="background:#333; color:white;" onclick="document.getElementById('profile-pw-box').classList.toggle('hidden')">⚙️ Güvenlik Ayarları</button>
+                <div id="profile-pw-box" class="hidden" style="margin-top:15px; background:#1a1a1a; padding:15px; border-radius:10px; border:1px solid #333;">
+                    <input type="password" id="profile-old-pw" placeholder="Eski Şifre">
+                    <input type="password" id="profile-new-pw" placeholder="Yeni Şifre">
+                    <button style="background:var(--success-green); color:black;" onclick="userUpdateOwnPw()">Şifreyi Güncelle</button>
+                </div>
+                <button style="background:var(--admin-red); margin-top:30px" onclick="logout()">Güvenli Çıkış</button>
+            </div>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="nav('home', this)">🏠</div>
+            <div class="nav-item" onclick="nav('add', this)">➕</div>
+            <div id="nav-admin" class="nav-item hidden" onclick="nav('admin', this)">🛡️</div>
+            <div class="nav-item" onclick="nav('profile', this)">👤</div>
+        </div>
+    </div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAFcxbgumt1FFDqZAYGbYWAaLyplMB6yM4",
+        authDomain: "notsakla-a165c.firebaseapp.com",
+        databaseURL: "https://notsakla-a165c-default-rtdb.firebaseio.com",
+        projectId: "notsakla-a165c",
+        storageBucket: "notsakla-a165c.firebasestorage.app",
+        messagingSenderId: "374348253046",
+        appId: "1:374348253046:web:cb9b66993d80f682911c57"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    emailjs.init("64jcGv4jrzRHefssR");
+
+    let currentUser = null;
+
+    window.onload = () => {
+        const saved = localStorage.getItem('notaldim_user');
+        if(saved) {
+            const d = JSON.parse(saved);
+            db.ref('users/' + d.user).once('value').then(s => {
+                const live = s.val();
+                if(live && live.pass === d.pass) startApp(d.user, live);
+            });
+        }
+    };
+
+    function login() {
+        const u = document.getElementById('l-user').value.trim().toLowerCase();
+        const p = document.getElementById('l-pass').value.trim();
+        const rem = document.getElementById('l-rem').checked;
+        const card = document.getElementById('l-card');
+        db.ref('users/' + u).once('value').then(s => {
+            const d = s.val();
+            if(d && d.pass === p) {
+                if(rem) localStorage.setItem('notaldim_user', JSON.stringify({user:u, pass:p}));
+                card.classList.add('success-flash');
+                setTimeout(() => { startApp(u, d); }, 500);
+            } else {
+                card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+            }
+        });
+    }
+
+    function startApp(u, d) {
+        currentUser = d;
+        document.getElementById('auth-pages').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('u-name-display').innerText = u;
+        document.getElementById('u-img').src = d.img;
+        if(d.role === 'admin') { 
+            document.getElementById('nav-admin').classList.remove('hidden'); 
+            document.getElementById('main-body').classList.add('admin-body');
+            loadAdminPanel(); 
+        }
+        db.ref('global_broadcast').on('value', s => {
+            const msg = s.val();
+            const bar = document.getElementById('broadcast-msg');
+            if(msg) { bar.innerText = "📢 " + msg; bar.classList.remove('hidden'); }
+            else { bar.classList.add('hidden'); }
+        });
+        loadNotes();
+    }
+
+    function zoomMedia(type, src) {
+        const modal = document.getElementById('zoomModal');
+        const inner = document.getElementById('zoomInner');
+        modal.style.display = 'flex';
+        inner.innerHTML = type === 'image' ? `<img src="${src}" class="zoom-content">` : `<video src="${src}" class="zoom-content" controls autoplay></video>`;
+    }
+
+    function loadNotes() {
+        db.ref('users/' + currentUser.user + '/notes').on('value', s => {
+            const notes = s.val() || [];
+            document.getElementById('note-list').innerHTML = notes.map((n, i) => `
+                <div class="note-card">
+                    <b>${n.t}</b><br><small>${n.b}</small>
+                    ${n.type === 'image' ? `<img src="${n.media}" class="media-content" onclick="zoomMedia('image','${n.media}')">` : ''}
+                    ${n.type === 'video' ? `<video src="${n.media}" class="media-content" onclick="zoomMedia('video','${n.media}')"></video>` : ''}
+                    <div style="margin-top:10px;">
+                        <button class="btn-sm" style="background:#333" onclick="editNoteContent('${currentUser.user}', ${i})">Düzenle</button>
+                        <button class="btn-sm" style="background:var(--admin-red)" onclick="deleteNote('${currentUser.user}', ${i})">Sil</button>
+                    </div>
+                </div>`).reverse().join('');
+        });
+    }
+
+    function loadAdminPanel() {
+        db.ref('users').on('value', s => {
+            const users = s.val();
+            let h = "";
+            for(let u in users) {
+                if(u === currentUser.user) continue;
+                h += `<div class="admin-box">
+                    <div class="admin-user-info">
+                        <img src="${users[u].img}" class="admin-user-img">
+                        <div><b>${u}</b><br><small style="color:#8e8e8e">Şifre: ${users[u].pass}</small></div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+                        <b style="font-size:12px; color:var(--warning-gold)">👤 Üye İçerikleri:</b>
+                        <div style="margin-top:10px;">
+                            ${(users[u].notes || []).length > 0 ? users[u].notes.map((n, ni) => `
+                                <div style="border-bottom:1px solid #333; margin-bottom:10px; padding-bottom:5px;">
+                                    <div style="font-size:11px;"><b>${n.t}</b></div>
+                                    ${n.type !== 'text' ? `<img src="${n.type==='image'?n.media:'https://cdn-icons-png.flaticon.com/512/1179/1179069.png'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-top:5px;cursor:pointer;" onclick="zoomMedia('${n.type}','${n.media}')">` : ''}
+                                    <br>
+                                    <button class="btn-sm" style="background:var(--ig-blue)" onclick="editNoteContent('${u}', ${ni})">DÜZENLE</button>
+                                    <button class="btn-sm" style="background:var(--admin-red)" onclick="deleteNote('${u}', ${ni})">SİL</button>
+                                </div>
+                            `).join('') : '<div style="font-size:11px; color:#666">Paylaşım yok.</div>'}
+                        </div>
+                    </div>
+                    <button class="btn-sm" style="background:orange; color:black; margin-top:10px; width:100%" onclick="adminSetPw('${u}', '${users[u].mail}')">ŞİFREYİ SIFIRLA & BİLDİR</button>
+                </div>`;
+            }
+            document.getElementById('admin-users-list').innerHTML = h;
+        });
+    }
+
+    function editNoteContent(u, i) {
+        db.ref('users/' + u + '/notes/' + i).once('value').then(s => {
+            const note = s.val();
+            const newTitle = prompt("Başlığı Düzenle:", note.t);
+            const newBody = prompt("İçeriği Düzenle:", note.b);
+            if(newTitle !== null) db.ref('users/' + u + '/notes/' + i).update({ t: newTitle, b: newBody }).then(() => alert("Güncellendi!"));
+        });
+    }
+
+    async function saveNote() {
+        const t = document.getElementById('nt-t').value;
+        const b = document.getElementById('nt-b').value;
+        const type = document.getElementById('media-type').value;
+        const fileInput = document.getElementById('media-file');
+        if(!t) return alert("Başlık yaz!");
+        document.getElementById('loading').style.display = 'flex';
+        let mediaData = "";
+        if(type !== 'text' && fileInput.files[0]) {
+            const reader = new FileReader();
+            mediaData = await new Promise(resolve => { reader.onload = () => resolve(reader.result); reader.readAsDataURL(fileInput.files[0]); });
+        }
+        db.ref('users/' + currentUser.user + '/notes').once('value').then(s => {
+            let n = s.val() || [];
+            n.push({ t, b, type, media: mediaData, date: new Date().toLocaleString() });
+            db.ref('users/' + currentUser.user + '/notes').set(n).then(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('nt-t').value = ""; document.getElementById('nt-b').value = "";
+                nav('home', document.querySelectorAll('.nav-item')[0]);
+            });
+        });
+    }
+
+    function deleteNote(u, i) {
+        if(!confirm("Silinsin mi?")) return;
+        db.ref('users/' + u + '/notes').once('value').then(s => {
+            let n = s.val() || []; n.splice(i, 1);
+            db.ref('users/' + u + '/notes').set(n);
+        });
+    }
+
+    function adminSetPw(u, email) {
+        const pw = prompt(u + " için yeni şifre yazın:");
+        if(!pw) return;
+        db.ref('users/' + u + '/pass').set(pw).then(() => {
+            emailjs.send("service_tp5m5h7", "template_vfe3eyo", { to_email: email, user_name: u, verify_code: "Yönetici şifrenizi güncelledi: " + pw })
+            .then(() => alert("Şifre değişti ve mail atıldı!"));
+        });
+    }
+
+    function nav(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        if(el) el.classList.add('active');
+    }
+
+    function toggleMediaInput() { document.getElementById('media-upload-area').classList.toggle('hidden', document.getElementById('media-type').value === 'text'); }
+    function logout() { localStorage.removeItem('notaldim_user'); location.reload(); }
+    function switchAuth(t) { document.querySelectorAll('.auth-container').forEach(c => c.classList.add('hidden')); document.getElementById(t + '-page').classList.remove('hidden'); }
+    function updateProfileImg(input) {
+        const reader = new FileReader();
+        reader.onload = () => { db.ref('users/' + currentUser.user + '/img').set(reader.result).then(() => { document.getElementById('u-img').src = reader.result; }); };
+        reader.readAsDataURL(input.files[0]);
+    }
+    function userUpdateOwnPw() {
+        const o = document.getElementById('profile-old-pw').value, n = document.getElementById('profile-new-pw').value;
+        if(o !== currentUser.pass) return alert("Eski şifre hatalı!");
+        db.ref('users/' + currentUser.user + '/pass').set(n).then(() => { alert("Şifre güncellendi!"); logout(); });
+    }
+    function register() {
+        const u = document.getElementById('r-user').value.trim().toLowerCase();
+        const m = document.getElementById('r-mail').value.trim().toLowerCase(), p = document.getElementById('r-pass').value.trim();
+        db.ref('users/' + u).set({ user: u, mail: m, pass: p, role: (u==='admin'?'admin':'user'), img: "https://cdn-icons-png.flaticon.com/512/149/149071.png", notes: [] }).then(() => login());
+    }
+    function sendGlobalBroadcast() {
+        const m = document.getElementById('admin-broadcast-input').value;
+        db.ref('global_broadcast').set(m).then(() => alert("Duyuru yayınlandı!"));
+    }
+</script>
+</body>
+</html>
