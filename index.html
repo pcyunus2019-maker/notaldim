@@ -1,121 +1,112 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>NotAldim | Dijital Defterim</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    <style>
-        :root { --ig-blue: #0095f6; --ig-bg: #000; --ig-card: #121212; --border: #262626; }
-        body { background: var(--ig-bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
-        
-        /* Gelişmiş Yükleme Ekranı */
-        #upload-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10000;
-        }
-        .progress-box { width: 80%; max-width: 300px; text-align: center; }
-        .bar-bg { width: 100%; background: #333; height: 8px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
-        .bar-fill { width: 0%; height: 100%; background: var(--ig-blue); box-shadow: 0 0 10px var(--ig-blue); transition: width 0.2s; }
-        #percent-text { font-size: 24px; font-weight: bold; color: var(--ig-blue); }
+Propose changes
+Commit message
+Update index.html
+Extended description
+Add an optional extended description...
+Direct commit or PR
 
-        /* Arayüz */
-        .page { display: none; padding: 20px; max-width: 500px; margin: 0 auto; }
-        .page.active { display: block; }
-        input, textarea, select { width: 100%; background: #1a1a1a; border: 1px solid var(--border); padding: 12px; border-radius: 8px; color: white; margin-bottom: 10px; font-size: 14px; }
-        button { width: 100%; background: var(--ig-blue); border: none; padding: 12px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
-        .note-card { background: var(--ig-card); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        .media-content { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 400px; object-fit: contain; }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border); }
-        .nav-btn { font-size: 24px; cursor: pointer; opacity: 0.5; }
-        .nav-btn.active { opacity: 1; color: var(--ig-blue); }
-    </style>
-</head>
-<body>
+Commit directly to the main branch
 
-    <div id="upload-overlay">
-        <div class="progress-box">
-            <div id="percent-text">0%</div>
-            <div class="bar-bg"><div id="bar-fill" class="bar-fill"></div></div>
-            <p id="status-msg">Dosya İşleniyor...</p>
-        </div>
-    </div>
+Create a new branch for this commit and start a pull request Learn more about pull requests
+Branch Name
+pcyunus2019-maker-patch-1
+Skip to content
+Navigation Menu
+pcyunus2019-maker
+notaldim
 
-    <div id="auth-page" class="page active">
-        <h1 style="text-align:center; font-style:italic;">NotAldim</h1>
-        <input type="text" id="u" placeholder="Kullanıcı Adı">
-        <input type="password" id="p" placeholder="Şifre">
-        <button onclick="login()">Giriş Yap</button>
-    </div>
+Type / to search
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+1
+Insights
+Settings
+Files
+Go to file
+t
+index.html
+notaldim
+/
+index.html
+in
+main
 
-    <div id="main-app" style="display:none;">
-        <div id="home" class="page"><h2>Akış</h2><div id="note-list"></div></div>
-        
-        <div id="add" class="page">
-            <h2>Yeni Paylaşım</h2>
-            <input type="text" id="title" placeholder="Başlık">
-            <textarea id="body" rows="3" placeholder="Bir şeyler yaz..."></textarea>
-            <select id="type" onchange="document.getElementById('file-input').style.display = this.value === 'text' ? 'none' : 'block'">
-                <option value="text">Sadece Yazı</option>
-                <option value="image">Fotoğraf</option>
-                <option value="video">Video</option>
-            </select>
-            <input type="file" id="file-input" style="display:none;">
-            <button onclick="handleSave()">Paylaş</button>
-        </div>
+Edit
 
-        <div class="nav-bar">
-            <div class="nav-btn active" onclick="showP('home', this)">🏠</div>
-            <div class="nav-btn" onclick="showP('add', this)">➕</div>
-            <div class="nav-btn" onclick="location.reload()">🚪</div>
-        </div>
-    </div>
+Preview
+Indent mode
 
-<script>
-    // SENİN FİREBASE BİLGİLERİN
-    const firebaseConfig = {
-        apiKey: "AIzaSyAFcxbgumt1FFDqZAYGbYWAaLyplMB6yM4",
-        authDomain: "notsakla-a165c.firebaseapp.com",
-        databaseURL: "https://notsakla-a165c-default-rtdb.firebaseio.com",
-        projectId: "notsakla-a165c",
-        storageBucket: "notsakla-a165c.firebasestorage.app",
-        messagingSenderId: "374348253046",
-        appId: "1:374348253046:web:cb9b66993d80f682911c57"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let curUser = null;
+Spaces
+Indent size
 
-    function login() {
-        const u = document.getElementById('u').value.toLowerCase();
-        const p = document.getElementById('p').value;
-        db.ref('users/'+u).once('value', s => {
-            if(s.val() && s.val().pass == p) {
-                curUser = u;
-                document.getElementById('auth-page').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
-                showP('home', document.querySelector('.nav-btn'));
-                loadNotes();
-            } else { alert("Hata: Bilgiler yanlış!"); }
-        });
-    }
+4
+Line wrap mode
 
-    async function handleSave() {
-        const t = document.getElementById('title').value;
-        const b = document.getElementById('body').value;
-        const type = document.getElementById('type').value;
-        const file = document.getElementById('file-input').files[0];
-
-        if(!t) return alert("Başlık boş olamaz!");
-
-        const overlay = document.getElementById('upload-overlay');
-        const bar = document.getElementById('bar-fill');
-        const pText = document.getElementById('percent-text');
-        const sMsg = document.getElementById('status-msg');
-
-        overlay.style.display = 'flex';
-        let mediaData = "";
+No wrap
+Editing index.html file contents
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
 
         if(type !== 'text' && file) {
             mediaData = await new Promise((resolve) => {
@@ -174,3 +165,4 @@
 </script>
 </body>
 </html>
+Use Control + Shift + m to toggle the tab key moving focus. Alternatively, use esc then tab to move to the next interactive element on the page.
