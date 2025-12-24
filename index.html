@@ -3,132 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>NotAldim | V83 Titan Fix</title>
+    <title>NotAldim | Aesthetic Vision</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        :root { --blue: #0095f6; --bg: #000; --card: #121212; --border: #262626; --red: #ed4956; --green: #78de45; --grad: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+        :root { --blue: #0095f6; --bg: #000; --card: #000; --border: #262626; --red: #ff3040; --grad: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: var(--bg); color: white; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding-bottom: 85px; overflow-x: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding-bottom: 75px; overflow-x: hidden; }
         
-        .page { display: none; padding: 15px; max-width: 500px; margin: 0 auto; animation: fadeIn 0.4s ease; }
+        .page { display: none; width: 100%; max-width: 500px; margin: 0 auto; animation: fadeIn 0.3s ease; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-        
-        .glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; margin-bottom: 20px; }
-        input, textarea, select { width: 100%; background: #080808; border: 1px solid var(--border); padding: 14px; border-radius: 16px; color: white; margin-bottom: 12px; font-size: 14px; }
-        button { width: 100%; background: var(--blue); border: none; border-radius: 16px; color: white; padding: 14px; font-weight: 800; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Story Styles */
-        .story-bar { display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px; margin-bottom: 15px; scrollbar-width: none; border-bottom: 1px solid #222; }
-        .story-circle { width: 68px; height: 68px; border-radius: 50%; border: 3px solid var(--blue); padding: 3px; object-fit: cover; cursor: pointer; background: var(--grad); }
-        
-        /* Post Styles */
-        .note-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 15px; margin-bottom: 20px; position: relative; }
-        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-        .card-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue); }
-        .post-img { width: 100%; border-radius: 15px; margin-top: 10px; border: 1px solid #222; }
-        
-        .social-btns { display: flex; gap: 15px; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px; }
-        .s-btn { cursor: pointer; font-size: 18px; }
+        /* Resimdeki Gibi Header */
+        .insta-header { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #1a1a1a; position: sticky; top: 0; background: #000; z-index: 100; }
+        .insta-header h1 { font-size: 22px; font-weight: 800; }
 
-        /* Chat Styles */
-        #chat-messages { height: 450px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #050505; border-radius: 24px; border: 1px solid #111; }
-        .msg-bubble { padding: 12px 18px; border-radius: 22px; font-size: 14px; position: relative; max-width: 80%; line-height: 1.4; }
-        .msg-me { align-self: flex-end; background: var(--blue); border-bottom-right-radius: 4px; }
-        .msg-other { align-self: flex-start; background: #262626; border-bottom-left-radius: 4px; }
-        .msg-time { font-size: 9px; opacity: 0.6; margin-top: 4px; text-align: right; }
-        .tık-read { color: #00faff; font-weight: bold; }
+        /* Story Design (Karşılıklı Takip Şartlı) */
+        .story-bar { display: flex; gap: 15px; overflow-x: auto; padding: 15px; scrollbar-width: none; border-bottom: 1px solid #1a1a1a; }
+        .story-ring { width: 72px; height: 72px; border-radius: 50%; background: var(--grad); padding: 3px; cursor: pointer; }
+        .story-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #000; }
 
-        .nav { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 18px 0; z-index: 1000; }
-        .nav-i { font-size: 26px; cursor: pointer; opacity: 0.3; }
-        .nav-i.active { opacity: 1; color: var(--blue); }
-        
+        /* Liste Tasarımı (Mesaj & Üyeler) */
+        .list-item { display: flex; align-items: center; gap: 15px; padding: 12px 15px; cursor: pointer; transition: 0.2s; }
+        .list-item:active { background: #121212; }
+        .list-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; }
+        .list-info { flex: 1; border-bottom: 0.5px solid #1a1a1a; padding-bottom: 12px; }
+        .list-name { font-weight: 700; font-size: 15px; }
+        .list-sub { font-size: 13px; color: #8e8e8e; margin-top: 2px; }
+
+        /* Admin Full Menü */
+        .adm-card { background: #121212; border-radius: 20px; padding: 20px; margin: 15px; text-align: center; border: 1px solid var(--border); }
+        .adm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .adm-btn { padding: 12px; border-radius: 12px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; color: white; }
+
+        /* Full Screen Story */
+        #story-overlay { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; }
+        .st-top { padding: 15px; display: flex; align-items: center; justify-content: space-between; }
+        .st-viewer-list { position: absolute; bottom: 30px; left: 0; width: 100%; text-align: center; font-size: 14px; color: #8e8e8e; cursor: pointer; }
+
+        /* Nav */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; border-top: 1px solid #1a1a1a; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .nav-i { font-size: 26px; cursor: pointer; opacity: 0.4; }
+        .nav-i.active { opacity: 1; }
+
         .hidden { display: none !important; }
-        .adm-btn { font-size: 11px; padding: 10px; margin-top: 5px; width: 100%; border-radius: 10px; }
-        .comment-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-top: 8px; font-size: 13px; }
+        button { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--blue); color: white; font-weight: 800; cursor: pointer; }
+        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: #121212; color: white; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="story-viewer" onclick="this.style.display='none'" style="position:fixed;inset:0;background:#000;z-index:11000;display:none;flex-direction:column;align-items:center;justify-content:center;">
-        <img id="st-img" style="max-width:100%; max-height:85vh; border-radius:15px;">
-        <p id="st-user" style="margin-top:15px; font-weight:800;"></p>
-    </div>
-
-    <div id="auth-area">
-        <div id="login-p" class="page active">
-            <div class="glass-card" style="margin-top:80px; text-align:center;">
-                <h1 style="font-weight:800; font-size:36px;">NotAldim</h1>
-                <input type="text" id="l-u" placeholder="Kullanıcı Adı">
-                <input type="password" id="l-p" placeholder="Şifre">
-                <button onclick="login()">Giriş Yap</button>
-                <p onclick="goAuth('reg-p')" style="color:var(--blue); cursor:pointer; margin-top:20px;">Kaydol</p>
-            </div>
+    <div id="story-overlay">
+        <div class="st-top">
+            <div id="st-user-info" style="display:flex;align-items:center;gap:10px;"></div>
+            <span onclick="closeStory()" style="font-size:30px;cursor:pointer;">✕</span>
         </div>
-        <div id="reg-p" class="page"><div class="glass-card"><h2>Kaydol</h2><input type="text" id="r-u" placeholder="Kullanıcı Adı"><input type="email" id="r-m" placeholder="E-Posta"><input type="password" id="r-p" placeholder="Şifre"><button onclick="register()">Kayıt Ol</button></div></div>
+        <div style="flex:1; display:flex; align-items:center; justify-content:center; position:relative;">
+            <img id="st-img-full" style="max-width:100%; max-height:80vh; border-radius:10px;">
+            <div id="st-views" class="st-viewer-list" onclick="showWhoViewed()">0 kişi gördü</div>
+        </div>
     </div>
 
-    <div id="app" class="hidden">
-        <div id="page-home" class="page active"><h2>Akış</h2><div id="note-list"></div></div>
-        
+    <div class="insta-header">
+        <h1 id="header-title">Instagram</h1>
+        <div style="display:flex;gap:20px;font-size:22px;">
+            <span onclick="nav('noti')">❤️</span>
+            <span onclick="nav('msg')">💬</span>
+        </div>
+    </div>
+
+    <div id="app">
+        <div id="page-home" class="page active">
+            <div class="story-bar" id="home-stories"></div>
+            <div id="feed-list"></div>
+        </div>
+
         <div id="page-search" class="page">
-            <h2>Keşfet</h2>
-            <div class="story-bar" id="search-story-list"></div>
-            <input type="text" id="search-input" placeholder="Üye ara..." oninput="doSearch(this.value)">
-            <div id="search-results"></div>
+            <div style="padding:15px;"><input type="text" placeholder="Ara..." oninput="doSearch(this.value)"></div>
+            <div id="member-list"></div>
         </div>
 
         <div id="page-add" class="page">
-            <h2>Yeni Paylaşım</h2>
-            <input type="text" id="nt-t" placeholder="Başlık"><textarea id="nt-b" rows="4" placeholder="İçerik..."></textarea>
-            <input type="file" id="m-file">
-            <button onclick="savePost()">Paylaş</button>
+            <div style="padding:20px;">
+                <h2>Paylaş</h2>
+                <textarea id="post-body" rows="5" placeholder="Açıklama..."></textarea>
+                <input type="file" id="post-file">
+                <button onclick="savePost()">Yayınla</button>
+            </div>
         </div>
 
         <div id="page-msg" class="page">
-            <h2>Mesajlar</h2>
             <div id="chat-list"></div>
             <div id="chat-box" class="hidden">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;"><span onclick="closeChat()" style="cursor:pointer; font-size:24px;">⬅</span><h3 id="chat-with-name" style="margin:0;"></h3></div>
-                <div id="chat-messages"></div>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <input id="msg-input" placeholder="Mesaj yaz..." style="margin:0;"><button onclick="sendMsg()" style="width:70px;">➤</button>
+                <div style="padding:15px; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:15px;">
+                    <span onclick="closeChat()">⇠</span> <b id="chat-target-name"></b>
+                </div>
+                <div id="chat-messages" style="height:70vh; overflow-y:auto; padding:15px;"></div>
+                <div style="padding:10px; display:flex; gap:10px;">
+                    <input id="msg-input" placeholder="Mesaj..." style="margin:0;">
+                    <button onclick="sendMsg()" style="width:60px;">➤</button>
                 </div>
             </div>
         </div>
-        
-        <div id="page-admin" class="page"><h2>🛡️ Admin</h2><div id="ad-users-list"></div><div id="ad-user-detail" class="hidden glass-card"></div></div>
+
+        <div id="page-admin" class="page">
+            <div id="ad-list"></div>
+            <div id="ad-detail" class="hidden"></div>
+        </div>
 
         <div id="page-prof" class="page">
-            <div class="glass-card" style="text-align:center;">
-                <img id="p-u-img" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--blue);">
-                <h2 id="p-u-name"></h2>
-                <div style="display:flex; justify-content:center; gap:30px; margin:20px 0;">
-                    <div><b>Takipçi</b><br><span id="p-followers">0</span></div>
-                    <div><b>Takip</b><br><span id="p-following">0</span></div>
-                </div>
+            <div style="text-align:center; padding:30px;">
+                <img id="p-img" class="list-img" style="width:90px; height:90px; border:2px solid var(--blue);">
+                <h2 id="p-name" style="margin:10px 0;"></h2>
                 <div id="my-prof-actions" class="hidden">
-                    <button onclick="document.getElementById('st-file').click()" style="background:var(--green); margin-bottom:10px;">📸 Hikaye Ekle</button>
-                    <input type="file" id="st-file" class="hidden" onchange="uploadStory(this)">
-                    <button onclick="logout()" style="background:var(--red);">Çıkış Yap</button>
+                    <button onclick="document.getElementById('st-up').click()" style="background:var(--grad);">📸 Hikaye Ekle</button>
+                    <input type="file" id="st-up" class="hidden" onchange="uploadStory(this)">
+                    <button onclick="logout()" style="background:#1a1a1a; margin-top:10px;">Çıkış Yap</button>
                 </div>
                 <div id="other-prof-actions" class="hidden">
-                    <button id="follow-btn" onclick="handleFollowAction()">Takip Et</button>
-                    <button onclick="openChatFromProf()" style="background:#222; margin-top:10px;">Mesaj Gönder</button>
+                    <button id="f-btn" onclick="handleFollow()">Takip Et</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="nav">
-            <div class="nav-i active" onclick="nav('home', this)">🏠</div>
-            <div class="nav-i" onclick="nav('search', this)">🔍</div>
-            <div class="nav-i" onclick="nav('add', this)">➕</div>
-            <div class="nav-i" onclick="nav('msg', this)">💬</div>
-            <div id="nav-ad" class="nav-i hidden" onclick="nav('admin', this)">🛡️</div>
-            <div class="nav-i" onclick="nav('prof', this, true)">👤</div>
-        </div>
+    <div class="nav">
+        <div class="nav-i active" onclick="nav('home', this)">🏠</div>
+        <div class="nav-i" onclick="nav('search', this)">🔍</div>
+        <div class="nav-i" onclick="nav('add', this)">➕</div>
+        <div class="nav-i" onclick="nav('msg', this)">💬</div>
+        <div class="nav-i" onclick="nav('prof', this, true)">👤</div>
     </div>
 
 <script>
@@ -136,125 +142,147 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let cur = null, viewU = null, activeChat = null;
+    let cur = null, viewU = null, activeChat = null, activeStory = null;
 
     window.onload = () => {
         const saved = localStorage.getItem('notUser');
-        if(saved) db.ref('users/'+saved).once('value', sn => { if(sn.exists() && !sn.val().banned) { cur = sn.val(); startApp(); } });
+        if(saved) db.ref('users/'+saved).once('value', sn => { if(sn.exists()){ cur = sn.val(); startApp(); } });
     };
 
     function startApp() {
-        document.getElementById('auth-area').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        if(cur.role == 'admin') { document.getElementById('nav-ad').classList.remove('hidden'); loadAdminUsers(); }
-        loadFeed(); loadChatList(); loadStories();
+        if(cur.role == 'admin') loadAdminList();
+        loadFeed(); loadStories(); doSearch(""); loadChatList();
     }
 
-    // MSG SYSTEM (✓✓ FIXED)
-    function openActiveChat(other) {
-        activeChat = [cur.user, other].sort().join('_');
-        document.getElementById('chat-list').classList.add('hidden');
-        document.getElementById('chat-box').classList.remove('hidden');
-        document.getElementById('chat-with-name').innerText = other;
-        
-        db.ref('chats/'+activeChat).on('value', sn => {
-            const ms = sn.val() || {}; let h = "";
-            Object.keys(ms).forEach(mid => {
-                const m = ms[mid]; const isMe = m.u === cur.user;
-                if(!isMe && !m.seen) db.ref('chats/'+activeChat+'/'+mid+'/seen').set(true);
-                const tık = isMe ? (m.seen ? '<span class="tık-read">✓✓</span>' : '✓') : '';
-                const time = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                h += `<div class="msg-bubble ${isMe?'msg-me':'msg-other'}" onclick="if('${m.u}'=='${cur.user}' && confirm('Sil?')) db.ref('chats/${activeChat}/${mid}').remove()">
-                    ${m.m} <div class="msg-time">${time} ${tık}</div>
-                </div>`;
-            });
-            const b = document.getElementById('chat-messages'); b.innerHTML = h; b.scrollTop = b.scrollHeight;
-        });
-    }
-
-    function sendMsg() {
-        const i = document.getElementById('msg-input'); if(!i.value || !activeChat) return;
-        db.ref('chats/'+activeChat).push({u:cur.user, m:i.value, t:Date.now(), seen:false});
-        i.value = "";
-    }
-
-    // NO REFRESH FOLLOW SYSTEM
-    function handleFollowAction() {
-        if(!viewU || viewU == 'admin') return;
-        const rf = db.ref('users/'+viewU+'/followers/'+cur.user);
-        const ri = db.ref('users/'+cur.user+'/following/'+viewU);
-        
-        rf.once('value', sn => {
-            if(sn.exists()) { rf.remove(); ri.remove(); }
-            else { rf.set(true); ri.set(true); }
-            // Sayfa yenilenmez, Firebase dinleyicisi profili otomatik günceller.
-        });
-    }
-
-    // BASE LOGIC
-    function loadFeed() {
-        db.ref('posts').on('value', sn => {
-            const data = sn.val() || {}; let h = "";
-            Object.keys(data).reverse().forEach(id => {
-                const p = data[id];
-                h += `<div class="note-card">
-                    <div class="card-header" onclick="viewProfile('${p.owner}')"><div style="display:flex;align-items:center;gap:10px;"><img src="${p.ownerImg}" class="card-img"><b>${p.owner}</b></div></div>
-                    <p><b>${p.t}</b><br>${p.b}</p>
-                    ${p.media ? `<img src="${p.media}" class="post-img">` : ''}
-                    <div class="social-btns"><span onclick="handleVote('${id}')">❤️ ${p.up||0}</span> <span onclick="addComment('${id}')">💬</span></div>
-                </div>`;
-            });
-            document.getElementById('note-list').innerHTML = h;
-        });
-    }
-
-    function viewProfile(u) {
-        viewU = u; nav('prof', null);
-        db.ref('users/'+u).on('value', sn => {
-            const d = sn.val(); if(!d) return;
-            document.getElementById('p-u-name').innerText = u;
-            document.getElementById('p-u-img').src = d.img;
-            document.getElementById('p-followers').innerText = d.fakeFollowers || (d.followers ? Object.keys(d.followers).length : 0);
-            document.getElementById('p-following').innerText = d.following ? Object.keys(d.following).length : 0;
-            if(u == cur.user) document.getElementById('my-prof-actions').classList.remove('hidden');
-            else {
-                document.getElementById('my-prof-actions').classList.add('hidden');
-                document.getElementById('other-prof-actions').classList.remove('hidden');
-                const btn = document.getElementById('follow-btn');
-                if(u=='admin') { btn.innerText = "Sistem Onaylı"; btn.style.background="#333"; }
-                else { btn.innerText = (d.followers && d.followers[cur.user]) ? "Takibi Bırak" : "Takip Et"; btn.style.background = (d.followers && d.followers[cur.user]) ? "#222" : "var(--blue)"; }
+    // STORY LOGIC (KARŞILIKLI TAKİP)
+    function loadStories() {
+        db.ref('stories').on('value', sn => {
+            const stories = sn.val() || {}; let h = "";
+            for(let u in stories) {
+                // Gizlilik: Sen onu takip ediyorsan VE o seni takip ediyorsa gör
+                db.ref('users/'+u).once('value', usn => {
+                    const ud = usn.val();
+                    const iFollow = ud.followers && ud.followers[cur.user];
+                    const heFollows = cur.following && cur.following[u];
+                    
+                    if(iFollow && heFollows || u == cur.user) {
+                        h += `<div class="story-ring" onclick="viewStory('${u}')"><img src="${ud.img}" class="story-img"></div>`;
+                        document.getElementById('home-stories').innerHTML = h;
+                    }
+                });
             }
         });
     }
 
-    function loadAdminUsers() {
+    function viewStory(u) {
+        activeStory = u;
+        db.ref('stories/'+u).once('value', sn => {
+            const s = sn.val();
+            document.getElementById('story-overlay').style.display = 'flex';
+            document.getElementById('st-img-full').src = s.img;
+            document.getElementById('st-user-info').innerHTML = `<img src="${s.ownerImg}" class="list-img" style="width:30px;height:30px;"> <b>${u}</b>`;
+            
+            // Görüldü İşlemi
+            if(u !== cur.user) db.ref('stories/'+u+'/viewers/'+cur.user).set(true);
+            
+            // İzleyici Sayısı
+            const views = s.viewers ? Object.keys(s.viewers).length : 0;
+            document.getElementById('st-views').innerText = views + " kişi gördü";
+        });
+    }
+
+    function showWhoViewed() {
+        db.ref('stories/'+activeStory+'/viewers').once('value', sn => {
+            alert("Görenler: " + Object.keys(sn.val() || {}).join(", "));
+        });
+    }
+
+    // ADMIN FULL YETKİ
+    function loadAdminList() {
         db.ref('users').on('value', sn => {
-            const us = sn.val(); let h = ""; for(let u in us) h += `<div class="glass-card" style="padding:10px;margin-bottom:5px;" onclick="manageTitan('${u}')">${u}</div>`;
-            document.getElementById('ad-users-list').innerHTML = h;
+            const us = sn.val(); let h = "<h3>Yönetim</h3>";
+            for(let u in us) h += `<div class="list-item" onclick="manageTitan('${u}')"><img src="${us[u].img}" class="list-img"><div class="list-info"><div class="list-name">${u}</div></div></div>`;
+            document.getElementById('ad-list').innerHTML = h;
         });
     }
 
     function manageTitan(u) {
         db.ref('users/'+u).once('value', sn => {
-            const d = sn.val(); document.getElementById('ad-user-detail').classList.remove('hidden');
-            document.getElementById('ad-user-detail').innerHTML = `<div style="text-align:center;"><h3>${u}</h3>
-                <button class="adm-btn" onclick="admOp('${u}','pass')">Şifre Değiştir</button>
-                <button class="adm-btn" onclick="admOp('${u}','fakeFollowers')">Fake Takipçi</button>
-                <button class="adm-btn" style="background:orange" onclick="db.ref('users/${u}/banned').set(!${d.banned||false})">BANLA/KALDIR</button>
-                <button class="adm-btn" style="background:red" onclick="if(confirm('Sil?')) db.ref('users/${u}').remove()">TAMAMEN SİL</button></div>`;
+            const d = sn.val();
+            document.getElementById('ad-detail').classList.remove('hidden');
+            document.getElementById('ad-detail').innerHTML = `
+                <div class="adm-card">
+                    <h3>${u}</h3>
+                    <p style="font-size:12px;opacity:0.6;">Pass: ${d.pass} | Mail: ${d.mail}</p>
+                    <div class="adm-grid">
+                        <button class="adm-btn" onclick="admOp('${u}','user')">Ad Değiştir</button>
+                        <button class="adm-btn" onclick="admOp('${u}','pass')">Şifre Değiştir</button>
+                        <button class="adm-btn" onclick="admOp('${u}','fakeFollowers')">Fake Takipçi</button>
+                        <button class="adm-btn" style="background:var(--red)" onclick="db.ref('users/${u}/banned').set(true)">BANLA</button>
+                        <button class="adm-btn" style="background:var(--blue)" onclick="db.ref('users/${u}/verified').set(true)">Mavi Tık Ver</button>
+                        <button class="adm-btn" style="background:grey" onclick="db.ref('users/${u}/verified').set(false)">Mavi Tık Al</button>
+                        <button class="adm-btn" style="background:purple" onclick="viewPrivate('${u}')">Gizli Postlar</button>
+                        <button class="adm-btn" style="background:red" onclick="db.ref('users/${u}').remove()">TAMAMEN SİL</button>
+                    </div>
+                </div>`;
         });
     }
 
-    function nav(id, el, isMy = false) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-'+id).classList.add('active'); if(isMy) viewProfile(cur.user); }
+    // MESAJLAR (RESİMDEKİ LİSTE TASARIMI)
+    function loadChatList() {
+        db.ref('chats').on('value', sn => {
+            const chats = sn.val() || {}; let h = "";
+            const targets = Object.keys(chats).filter(id => id.includes(cur.user));
+            targets.forEach(cid => {
+                const other = cid.replace(cur.user,'').replace('_','');
+                db.ref('users/'+other).once('value', usn => {
+                    const ud = usn.val();
+                    h += `<div class="list-item" onclick="openActiveChat('${other}')">
+                            <img src="${ud.img}" class="list-img">
+                            <div class="list-info">
+                                <div class="list-name">${other}</div>
+                                <div class="list-sub">Sohbeti açmak için dokun</div>
+                            </div>
+                          </div>`;
+                    document.getElementById('chat-list').innerHTML = h;
+                });
+            });
+        });
+    }
+
+    function openActiveChat(other) {
+        activeChat = [cur.user, other].sort().join('_');
+        document.getElementById('chat-list').classList.add('hidden');
+        document.getElementById('chat-box').classList.remove('hidden');
+        document.getElementById('chat-target-name').innerText = other;
+        db.ref('chats/'+activeChat).on('value', sn => {
+            const ms = sn.val() || {}; let h = "";
+            Object.keys(ms).forEach(mid => {
+                const m = ms[mid]; const isMe = m.u === cur.user;
+                if(!isMe && !m.seen) db.ref('chats/'+activeChat+'/'+mid+'/seen').set(true);
+                const tık = isMe ? (m.seen ? '<span style="color:var(--blue)">✓✓</span>' : '✓') : '';
+                h += `<div style="text-align:${isMe?'right':'left'};margin-bottom:10px;">
+                        <div style="display:inline-block;padding:10px 15px;border-radius:18px;background:${isMe?var(--blue):'#262626'};font-size:14px;">${m.m} ${tık}</div>
+                      </div>`;
+            });
+            document.getElementById('chat-messages').innerHTML = h;
+        });
+    }
+
+    // BASE
+    function nav(id, el, isMy) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-'+id).classList.add('active');
+        document.querySelectorAll('.nav-i').forEach(i => i.classList.remove('active'));
+        if(el) el.classList.add('active');
+        if(isMy) viewProfile(cur.user);
+    }
+    function closeStory() { document.getElementById('story-overlay').style.display='none'; }
     function closeChat() { document.getElementById('chat-box').classList.add('hidden'); document.getElementById('chat-list').classList.remove('hidden'); }
-    function login() { const u = document.getElementById('l-u').value.trim().toLowerCase(), p = document.getElementById('l-p').value.trim(); db.ref('users/'+u).once('value', sn => { const d = sn.val(); if(d && d.pass == p){ cur = d; localStorage.setItem('notUser', u); startApp(); } else alert("Hata!"); }); }
-    function register() { const u = document.getElementById('r-u').value.trim().toLowerCase(), m = document.getElementById('r-m').value.trim(), p = document.getElementById('r-p').value.trim(); db.ref('users/'+u).set({user:u, mail:m, pass:p, role:'user', img:"https://cdn-icons-png.flaticon.com/512/149/149071.png"}).then(() => { db.ref('users/admin/followers/'+u).set(true); db.ref('users/'+u+'/following/admin').set(true); location.reload(); }); }
-    function loadChatList() { db.ref('chats').on('value', sn => { const cs = sn.val() || {}; let h = ""; Object.keys(cs).forEach(cid => { if(cid.includes(cur.user)) { const other = cid.replace(cur.user,'').replace('_',''); h += `<div class="glass-card" style="padding:15px;margin-bottom:5px;" onclick="openActiveChat('${other}')">💬 ${other}</div>`; document.getElementById('chat-list').innerHTML = h; }}); }); }
-    function logout() { localStorage.removeItem('notUser'); location.reload(); }
-    async function savePost() { const t = document.getElementById('nt-t').value, b = document.getElementById('nt-b').value, f = document.getElementById('m-file').files[0]; if(!t) return; const done = (m) => db.ref('posts/'+Date.now()).set({t, b, media:m, owner:cur.user, ownerImg:cur.img, up:0}).then(()=>nav('home',null)); if(f){ const r=new FileReader(); r.onload=()=>done(r.result); r.readAsDataURL(f); } else done(""); }
-    function loadStories() { db.ref('stories').on('value', sn => { const s = sn.val() || {}; let h = ""; for(let u in s) h += `<div onclick="viewStory('${u}')"><img src="${s[u].img}" class="story-circle"></div>`; document.getElementById('search-story-list').innerHTML = h; }); }
-    function viewStory(u) { db.ref('stories/'+u).once('value', sn => { document.getElementById('story-viewer').style.display='flex'; document.getElementById('st-img').src=sn.val().img; document.getElementById('st-user').innerText=u; }); }
-    async function uploadStory(input) { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = async (e) => { await db.ref('stories/'+cur.user).set({img: e.target.result, time: Date.now()}); location.reload(); }; r.readAsDataURL(f); }
+    function sendMsg() { const i = document.getElementById('msg-input'); if(i.value) db.ref('chats/'+activeChat).push({u:cur.user, m:i.value, t:Date.now(), seen:false}); i.value=""; }
+    function admOp(u,k) { const v = prompt("Yeni:"); if(v) db.ref('users/'+u+'/'+k).set(v); }
+    function viewProfile(u) { viewU = u; nav('prof'); db.ref('users/'+u).on('value', sn => { const d = sn.val(); document.getElementById('p-name').innerText = u; document.getElementById('p-img').src = d.img; if(u==cur.user) document.getElementById('my-prof-actions').classList.remove('hidden'); else document.getElementById('other-prof-actions').classList.remove('hidden'); }); }
 </script>
 </body>
 </html>
