@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>NotAldim | V54 Elite Pro</title>
+    <title>NotAldim | V63 Ultimate</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        :root { --blue: #0095f6; --bg: #000; --card: #161616; --border: #262626; --red: #ff3b30; --green: #2ecc71; --grey: #262626; }
+        :root { --blue: #0095f6; --bg: #000; --card: #161616; --border: #262626; --red: #ff3b30; --green: #2ecc71; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: var(--bg); color: white; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding-bottom: 85px; }
+        body { background: var(--bg); color: white; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding-bottom: 85px; overflow-x: hidden; }
         
         #loading { position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; }
         .p-bar { width: 70%; max-width: 250px; background: #222; height: 6px; border-radius: 10px; overflow: hidden; margin: 15px 0; }
         #p-fill { width: 0%; height: 100%; background: var(--blue); transition: width 0.3s; }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-        .vote-anim { animation: pop 0.3s ease; }
-
+        
         .page { display: none; padding: 15px; max-width: 500px; margin: 0 auto; animation: fadeIn 0.4s ease; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         .glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; margin-bottom: 20px; }
-        input, textarea, select { width: 100%; background: #080808; border: 1px solid var(--border); padding: 14px; border-radius: 16px; color: white; margin-bottom: 12px; font-size: 14px; }
+        input, textarea, select { width: 100%; background: #080808; border: 1px solid var(--border); padding: 14px; border-radius: 16px; color: white; margin-bottom: 12px; font-size: 14px; transition: 0.3s; }
+        input:focus { border-color: var(--blue); }
         button { width: 100%; background: var(--blue); border: none; border-radius: 16px; color: white; padding: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.96); }
 
         .note-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 15px; margin-bottom: 25px; position: relative; }
         .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; cursor: pointer; }
@@ -34,20 +34,16 @@
         
         .social-btns { display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px; }
         .s-btn { cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 12px; background: #080808; border: 1px solid #222; }
-        .voted-up { color: var(--green); border-color: var(--green); }
-        .voted-down { color: var(--red); border-color: var(--red); }
 
-        .comment-wrapper { margin-top: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px; }
-        .comment-item { padding: 8px 0; border-bottom: 1px solid #222; font-size: 13px; }
-
-        .msg-bubble { margin-bottom: 12px; padding: 10px 16px; max-width: 85%; font-size: 14px; position: relative; }
-        .msg-me { align-self: flex-end; background: var(--blue); border-radius: 20px 20px 0 20px; }
-        .msg-other { align-self: flex-start; background: var(--grey); border-radius: 20px 20px 20px 0; }
+        .msg-bubble { margin-bottom: 12px; padding: 10px 16px; border-radius: 20px; max-width: 85%; font-size: 14px; word-wrap: break-word; }
+        .msg-me { align-self: flex-end; background: var(--blue); color: white; border-bottom-right-radius: 4px; }
+        .msg-other { align-self: flex-start; background: #262626; color: white; border-bottom-left-radius: 4px; }
 
         .nav { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 18px 0; z-index: 1000; }
         .nav-i { font-size: 26px; cursor: pointer; opacity: 0.3; transition: 0.3s; }
         .nav-i.active { opacity: 1; color: var(--blue); transform: translateY(-5px); }
         
+        .verified { color: var(--blue); margin-left: 4px; cursor: help; }
         .hidden { display: none !important; }
         #zoom { position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:10001; display:none; align-items:center; justify-content:center; }
     </style>
@@ -65,40 +61,42 @@
                 <input type="password" id="l-p" placeholder="Şifre" onkeydown="if(event.key==='Enter') login()">
                 <button onclick="login()">Giriş Yap</button>
                 <p onclick="goAuth('reg-p')" style="color:var(--blue); font-size:14px; cursor:pointer; margin-top:20px;">Kaydol</p>
-                <p onclick="goAuth('forgot-p')" style="color:#444; font-size:12px; cursor:pointer;">Şifremi Unuttum</p>
+                <p onclick="goAuth('forgot-p')" style="color:#666; font-size:12px; cursor:pointer;">Şifre Hatırlat</p>
             </div>
         </div>
-        <div id="reg-p" class="page"><div class="glass-card"><h2>Kaydol</h2><input type="text" id="r-u" placeholder="Kullanıcı Adı"><input type="email" id="r-m" placeholder="E-Posta"><input type="password" id="r-p" placeholder="Şifre"><button onclick="register()">Kayıt Ol</button><p onclick="goAuth('login-p')" style="text-align:center; cursor:pointer; margin-top:15px; color:#666;">Geri Dön</p></div></div>
+        <div id="reg-p" class="page"><div class="glass-card"><h2>Kaydol</h2><input type="text" id="r-u" placeholder="Kullanıcı Adı" onkeydown="if(event.key==='Enter') register()"><input type="email" id="r-m" placeholder="E-Posta"><input type="password" id="r-p" placeholder="Şifre"><button onclick="register()">Kayıt Ol</button><p onclick="goAuth('login-p')" style="text-align:center; cursor:pointer; margin-top:15px; color:#666;">Geri Dön</p></div></div>
         <div id="forgot-p" class="page"><div class="glass-card"><h2>Şifre Kurtar</h2><input type="text" id="f-u" placeholder="Kullanıcı Adı"><button onclick="forgot()">Gönder</button></div></div>
     </div>
 
     <div id="app" class="hidden">
         <div id="page-home" class="page active"><h2>Akış</h2><div id="note-list"></div></div>
-        
         <div id="page-add" class="page">
             <h2>Yeni Paylaşım</h2>
             <select id="m-type" onchange="toggleM()"><option value="text">Sadece Yazı</option><option value="media">Fotoğraf / Video</option></select>
-            <select id="m-vis"><option value="public">Herkese Açık</option><option value="private">Sadece Ben</option></select>
             <input type="text" id="nt-t" placeholder="Başlık"><textarea id="nt-b" rows="4" placeholder="İçerik..."></textarea>
             <div id="m-area" class="hidden"><input type="file" id="m-file" accept="image/*,video/*"></div>
             <button onclick="save()">Yayınla</button>
         </div>
-
-        <div id="page-msg" class="page"><h2>Mesajlar</h2><div id="chat-list"></div><div id="chat-box" class="hidden"><div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;"><span onclick="closeChat()" style="cursor:pointer; font-size:20px;">⬅</span><h3 id="chat-with-name" style="margin:0;"></h3></div><div id="chat-messages" style="height:400px; overflow-y:auto; background:#080808; padding:15px; border-radius:24px; margin-bottom:15px; display:flex; flex-direction:column;"></div><div style="display:flex; gap:10px;"><input id="msg-input" placeholder="Yaz..."><button style="width:70px;" onclick="sendMsg()">➤</button></div></div></div>
-
+        <div id="page-msg" class="page">
+            <h2>Mesajlar</h2>
+            <div id="chat-list"></div>
+            <div id="chat-box" class="hidden">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;"><span onclick="closeChat()" style="cursor:pointer; font-size:20px;">⬅</span><h3 id="chat-with-name" style="margin:0;"></h3></div>
+                <div id="chat-messages" style="height:400px; overflow-y:auto; background:#080808; padding:15px; border-radius:24px; margin-bottom:15px; display:flex; flex-direction:column;"></div>
+                <div style="display:flex; gap:10px;"><input id="msg-input" placeholder="Yaz..."><button style="width:70px;" onclick="sendMsg()">➤</button></div>
+            </div>
+        </div>
         <div id="page-noti" class="page">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2>Bildirimler</h2>
                 <select id="noti-setting" onchange="updateNotiSetting()" style="width:auto; margin:0; font-size:12px;">
-                    <option value="on">Bildirim: AÇIK</option>
-                    <option value="off">Bildirim: KAPALI</option>
+                    <option value="on">Bildirimler: AÇIK</option>
+                    <option value="off">Bildirimler: KAPALI</option>
                 </select>
             </div>
             <div id="noti-list"></div>
         </div>
-
-        <div id="page-admin" class="page"><h2>🛡️ Admin</h2><div style="overflow-x:auto;"><table id="ad-table" style="width:100%; background:#080808; border-radius:15px;"></table></div><div id="ad-detail" class="hidden"></div></div>
-
+        <div id="page-admin" class="page"><h2>🛡️ Admin Paneli</h2><div style="overflow-x:auto;"><table id="ad-table" style="width:100%; background:#080808; border-radius:15px;"></table></div><div id="ad-detail" class="hidden"></div></div>
         <div id="page-prof" class="page">
             <div class="glass-card" style="text-align:center;">
                 <img id="p-u-img" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--blue); padding:3px; cursor:pointer;" onclick="if(viewU==cur.user) document.getElementById('p-file').click()">
@@ -108,36 +106,32 @@
                     <div onclick="showUsersList('followers')" style="cursor:pointer;"><b>Takipçi</b><br><span id="p-followers">0</span></div>
                     <div onclick="showUsersList('following')" style="cursor:pointer;"><b>Takip</b><br><span id="p-following">0</span></div>
                 </div>
-                <div id="my-prof-actions" class="hidden">
-                    <input type="password" id="p-new-pw" placeholder="Yeni Şifre"><button onclick="updateMyPw()">Güncelle</button>
-                    <button style="background:#222; margin-top:10px;" onclick="logout()">Güvenli Çıkış</button>
-                </div>
-                <div id="other-prof-actions" class="hidden"><button id="follow-btn" onclick="handleFollow()">Takip Et</button><button onclick="openChat()" style="background:#222; margin-top:5px;">Mesaj Gönder</button></div>
+                <div id="my-prof-actions" class="hidden"><button onclick="updateMyPw()">Şifre Güncelle</button><button style="background:#222; margin-top:10px;" onclick="logout()">Güvenli Çıkış</button></div>
+                <div id="other-prof-actions" class="hidden"><button id="follow-btn" onclick="handleFollow()">Takip Et</button><button onclick="openChatFromProf()" style="background:#222; margin-top:10px;">Mesaj Gönder</button></div>
             </div>
             <div id="list-modal" class="hidden glass-card" style="position:relative;"><span onclick="this.parentElement.classList.add('hidden')" style="position:absolute; right:15px; top:15px; cursor:pointer;">✖</span><div id="modal-content"></div></div>
         </div>
-
-        <div class="nav">
-            <div class="nav-i active" onclick="nav('home', this)">🏠</div>
-            <div class="nav-i" onclick="nav('add', this)">➕</div>
-            <div class="nav-i" onclick="nav('msg', this)">💬</div>
-            <div class="nav-i" onclick="nav('noti', this)">🔔</div>
-            <div id="nav-ad" class="nav-i hidden" onclick="nav('admin', this)">🛡️</div>
-            <div class="nav-i" onclick="nav('prof', this, true)">👤</div>
-        </div>
+        <div class="nav"><div class="nav-i active" onclick="nav('home', this)">🏠</div><div class="nav-i" onclick="nav('add', this)">➕</div><div class="nav-i" onclick="nav('msg', this)">💬</div><div class="nav-i" onclick="nav('noti', this)">🔔</div><div id="nav-ad" class="nav-i hidden" onclick="nav('admin', this)">🛡️</div><div class="nav-i" onclick="nav('prof', this, true)">👤</div></div>
     </div>
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyAFcxbgumt1FFDqZAYGbYWAaLyplMB6yM4", authDomain: "notsakla-a165c.firebaseapp.com", databaseURL: "https://notsakla-a165c-default-rtdb.firebaseio.com", projectId: "notsakla-a165c", storageBucket: "notsakla-a165c.firebasestorage.app", messagingSenderId: "374348253046", appId: "1:374348253046:web:cb9b66993d80f682911c57" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    emailjs.init("64jcGv4jrzRHefssR");
 
     let cur = null, viewU = null, activeChat = null;
 
+    window.onload = () => {
+        const saved = localStorage.getItem('notUser');
+        if(saved) { db.ref('users/'+saved).once('value', sn => { if(sn.exists()){ cur = sn.val(); startApp(); } }); }
+    };
+
     function login() {
         const u = document.getElementById('l-u').value.trim().toLowerCase(), p = document.getElementById('l-p').value.trim();
-        db.ref('users/'+u).once('value', sn => { const d = sn.val(); if(d && d.pass == p) { cur = d; startApp(); } else alert("Hata!"); });
+        db.ref('users/'+u).once('value', sn => {
+            const d = sn.val();
+            if(d && d.pass == p){ cur = d; localStorage.setItem('notUser', u); startApp(); } else alert("Hata!");
+        });
     }
 
     function startApp() {
@@ -152,64 +146,40 @@
         db.ref('posts').on('value', sn => {
             const data = sn.val() || {}; let h = "";
             Object.keys(data).reverse().forEach(id => {
-                const p = data[id]; const myV = (p.votes && p.votes[cur.user]) ? p.votes[cur.user] : null;
-                if(p.vis == 'public' || p.owner == cur.user || cur.role == 'admin') {
-                    h += `<div class="note-card">
-                        ${(p.owner==cur.user || cur.role=='admin') ? `<span style="position:absolute; top:15px; right:15px; color:red; cursor:pointer; font-size:10px;" onclick="delPost('${id}')">SİL</span>` : ''}
-                        <div class="card-header" onclick="viewProfile('${p.owner}')"><img src="${p.ownerImg}" class="card-img"><b>${p.owner}${p.verified?' ✔':''}</b></div>
-                        <h3>${p.t}</h3><p>${p.b}</p>
-                        ${p.media ? (p.type=='image'?`<img src="${p.media}" class="m-preview" onclick="zoom('image','${p.media}')">`:`<video src="${p.media}" class="m-preview" onclick="zoom('video','${p.media}')"></video>`) : ''}
-                        <div class="social-btns">
-                            <span class="s-btn ${myV=='up'?'voted-up':''}" onclick="handleVote('${id}','up',this)">👍 ${p.up || 0}</span>
-                            <span class="s-btn ${myV=='down'?'voted-down':''}" onclick="handleVote('${id}','down',this)">👎 ${p.down || 0}</span>
-                            <span class="s-btn" onclick="addComment('${id}')">💬 ${p.comments?p.comments.length:0}</span>
-                        </div>
-                        <div class="comment-wrapper">${(p.comments||[]).map(c=>`<div class="comment-item" onclick="viewProfile('${c.u}')"><b style="color:var(--blue)">${c.u}:</b> ${c.m}</div>`).join('')}</div>
-                    </div>`;
-                }
+                const p = data[id];
+                h += `<div class="note-card">
+                    ${(p.owner==cur.user || cur.role=='admin') ? `<span style="position:absolute; top:15px; right:15px; color:red; cursor:pointer; font-size:10px;" onclick="delPost('${id}')">SİL</span>` : ''}
+                    <div class="card-header" onclick="viewProfile('${p.owner}')">
+                        <img src="${p.ownerImg}" class="card-img">
+                        <b>${p.owner}${p.verified ? '<span class="verified" title="Onaylı Hesap">✔</span>' : ''}</b>
+                    </div>
+                    <h3>${p.t}</h3><p>${p.b}</p>
+                    ${p.media ? (p.type=='image'?`<img src="${p.media}" class="m-preview" onclick="zoom('image','${p.media}')">` : `<video src="${p.media}" class="m-preview" controls></video>`) : ''}
+                    <div class="social-btns">
+                        <span class="s-btn" onclick="handleVote('${id}','up')">👍 ${p.up || 0}</span>
+                        <span class="s-btn" onclick="addComment('${id}')">💬 Yorum</span>
+                    </div>
+                </div>`;
             });
             document.getElementById('note-list').innerHTML = h;
         });
     }
 
-    function handleVote(postId, type, el) {
-        el.classList.add('vote-anim'); setTimeout(()=>el.classList.remove('vote-anim'), 300);
-        db.ref('posts/'+postId).once('value', sn => {
-            const p = sn.val(); const votes = p.votes || {}; const old = votes[cur.user];
-            if(old === type) { delete votes[cur.user]; db.ref('posts/'+postId+'/'+type).transaction(v=>(v||1)-1); }
-            else { 
-                if(old) db.ref('posts/'+postId+'/'+old).transaction(v=>(v||1)-1);
-                votes[cur.user] = type; db.ref('posts/'+postId+'/'+type).transaction(v=>(v||0)+1);
-                if(type=='up') sendNoti(p.owner, cur.user + " postunu beğendi!");
-            }
-            db.ref('posts/'+postId+'/votes').set(votes);
-        });
-    }
-
-    function addComment(id) {
-        const m = prompt("Yorumun:"); if(!m) return;
-        db.ref('posts/'+id).once('value', sn => {
-            const p = sn.val(); let c = p.comments || []; c.push({u:cur.user, m:m});
-            db.ref('posts/'+id+'/comments').set(c).then(() => sendNoti(p.owner, cur.user + " yorum yaptı!"));
-        });
-    }
-
-    function updateNotiSetting() { const v = document.getElementById('noti-setting').value; db.ref('users/'+cur.user+'/notiSetting').set(v); }
-    function sendNoti(u, m) { db.ref('users/'+u).once('value', sn => { if(sn.val().notiSetting !== 'off' && u !== cur.user) db.ref('users/'+u+'/notifications').push({msg: m, t: Date.now()}); }); }
-    function loadNotifications() { db.ref('users/'+cur.user+'/notifications').on('value', sn => { const d = sn.val() || {}; let h = ""; Object.values(d).reverse().forEach(n => h += `<div style="background:#111; padding:12px; border-radius:15px; margin-bottom:10px; border-left:3px solid var(--blue); font-size:13px;">${n.msg}</div>`); document.getElementById('noti-list').innerHTML = h || "Bildirim yok."; }); }
-
     function viewProfile(u) {
         viewU = u; nav('prof', document.querySelector('.nav-i[onclick*="prof"]'));
         db.ref('users/'+u).on('value', sn => {
             const d = sn.val(); if(!d) return;
-            document.getElementById('p-u-name').innerText = u + (d.verified ? " ✔" : ""); document.getElementById('p-u-img').src = d.img;
+            document.getElementById('p-u-name').innerHTML = u + (d.verified ? '<span class="verified" title="Onaylı Hesap">✔</span>' : '');
+            document.getElementById('p-u-img').src = d.img;
             document.getElementById('p-followers').innerText = d.fakeFollowers || (d.followers ? Object.keys(d.followers).length : 0);
             document.getElementById('p-following').innerText = d.following ? Object.keys(d.following).length : 0;
             if(u == cur.user) { document.getElementById('my-prof-actions').classList.remove('hidden'); document.getElementById('other-prof-actions').classList.add('hidden'); }
             else { 
                 document.getElementById('my-prof-actions').classList.add('hidden'); document.getElementById('other-prof-actions').classList.remove('hidden');
-                const btn = document.getElementById('follow-btn'); btn.innerText = (d.followers && d.followers[cur.user]) ? "Takibi Bırak" : "Takip Et";
-                btn.style.background = (d.followers && d.followers[cur.user]) ? "#222" : "var(--blue)";
+                const btn = document.getElementById('follow-btn');
+                const isF = d.followers && d.followers[cur.user];
+                btn.innerText = isF ? "Takibi Bırak" : "Takip Et";
+                btn.style.background = isF ? "#222" : "var(--blue)";
             }
         });
     }
@@ -220,13 +190,15 @@
     }
 
     function showUsersList(type) {
-        db.ref('users/'+viewU+'/'+type).once('value', sn => {
-            const keys = Object.keys(sn.val() || {}); document.getElementById('list-modal').classList.remove('hidden');
-            let h = ""; if(keys.length == 0) h = "<p style='text-align:center;'>Kimse yok.</p>";
-            keys.forEach(uid => { db.ref('users/'+uid).once('value', usn => { h += `<div style="display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;" onclick="viewProfile('${uid}')"><img src="${usn.val().img}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"><b>${uid}</b></div>`; document.getElementById('modal-content').innerHTML = h; }); });
+        db.ref('users/'+viewU).once('value', sn => {
+            if(sn.val().role == 'admin') return alert("Admin hesabı bilgileri gizlidir.");
+            const list = sn.val()[type] || {}; const keys = Object.keys(list);
+            document.getElementById('list-modal').classList.remove('hidden');
+            let h = ""; keys.forEach(uid => { db.ref('users/'+uid).once('value', usn => { h += `<div onclick="viewProfile('${uid}')" style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #222;"><img src="${usn.val().img}" style="width:35px;height:35px;border-radius:50%;object-fit:cover;"><b>${uid}</b></div>`; document.getElementById('modal-content').innerHTML = h; }); });
         });
     }
 
+    function openChatFromProf() { activeChat = [cur.user, viewU].sort().join('_'); nav('msg', document.querySelector('.nav-i[onclick*="msg"]')); openActiveChat(viewU); }
     function openActiveChat(other) {
         activeChat = [cur.user, other].sort().join('_');
         document.getElementById('chat-list').classList.add('hidden'); document.getElementById('chat-box').classList.remove('hidden');
@@ -237,42 +209,59 @@
             const b = document.getElementById('chat-messages'); b.innerHTML = h; b.scrollTop = b.scrollHeight;
         });
     }
-
     function sendMsg() { const i = document.getElementById('msg-input'); if(!i.value || !activeChat) return; db.ref('chats/'+activeChat).push({u:cur.user, m:i.value, t:Date.now()}); i.value = ""; }
     function closeChat() { document.getElementById('chat-box').classList.add('hidden'); document.getElementById('chat-list').classList.remove('hidden'); }
     function loadChatList() {
         db.ref('chats').on('value', sn => {
             const chats = sn.val() || {}; let h = "";
-            Object.keys(chats).forEach(cid => { if(cid.includes(cur.user)) { const other = cid.replace(cur.user, '').replace('_', ''); db.ref('users/'+other).once('value', usn => { h += `<div class="glass-card" style="padding:12px; cursor:pointer;" onclick="openActiveChat('${other}')">💬 ${other} ile Sohbet</div>`; document.getElementById('chat-list').innerHTML = h; }); }});
+            Object.keys(chats).forEach(cid => { if(cid.includes(cur.user)) { const other = cid.replace(cur.user, '').replace('_', ''); db.ref('users/'+other).once('value', usn => { if(usn.exists()) h += `<div class="glass-card" style="padding:12px; cursor:pointer;" onclick="openActiveChat('${other}')">💬 ${other} ile Sohbet</div>`; document.getElementById('chat-list').innerHTML = h; }); }});
         });
     }
 
-    function loadAdmin() { db.ref('users').on('value', sn => { const us = sn.val(); let h = ""; for(let u in us) h += `<tr onclick="manage('${u}')"><td style="padding:10px;">${u}</td><td style="padding:10px;">${us[u].pass}</td></tr>`; document.getElementById('ad-table').innerHTML = h; }); }
-    function manage(u) { document.getElementById('ad-detail').classList.remove('hidden'); document.getElementById('ad-detail-inner').innerHTML = `<div class="glass-card"><h3>${u}</h3><button onclick="chP('${u}','user')">Ad</button><button onclick="chP('${u}','pass')">Şifre</button><button onclick="fF('${u}')">Fake</button><button onclick="db.ref('users/${u}/verified').set(true)">✔</button><button style="background:var(--red)" onclick="ban('${u}')">Sil</button></div>`; }
-    function chP(u, p) { const v = prompt("Yeni:"); if(!v) return; if(p=='user'){ db.ref('users/'+u).once('value', sn => { db.ref('users/'+v).set(sn.val()).then(() => db.ref('users/'+u).remove()); }); } else db.ref('users/'+u+'/pass').set(v); }
-    function fF(u) { const v = prompt("Sayı:"); if(v) db.ref('users/'+u+'/fakeFollowers').set(v); }
-    function updateMyPw() { const pw = document.getElementById('p-new-pw').value; if(pw.length<4) return alert("Kısa!"); db.ref('users/'+cur.user+'/pass').set(pw).then(()=>location.reload()); }
-    function updateProfile(input) { const r = new FileReader(); r.onload = () => db.ref('users/'+cur.user+'/img').set(r.result).then(() => location.reload()); r.readAsDataURL(input.files[0]); }
-    function logout() { localStorage.removeItem('not_user'); location.reload(); }
-    function delPost(id) { if(confirm("Post silinsin mi?")) db.ref('posts/'+id).remove(); }
+    function loadAdmin() { db.ref('users').on('value', sn => { const us = sn.val(); let h = ""; for(let u in us) h += `<tr onclick="manage('${u}')"><td style="padding:10px;">${u}</td><td style="padding:10px;">${us[u].role}</td></tr>`; document.getElementById('ad-table').innerHTML = h; }); }
+    function manage(u) {
+        db.ref('users/'+u).once('value', sn => {
+            const d = sn.val(); document.getElementById('ad-detail').classList.remove('hidden');
+            document.getElementById('ad-detail-inner').innerHTML = `
+                <div class="glass-card" style="text-align:center; background:#111;">
+                    <h3>${u} Kontrol</h3>
+                    <p style="font-size:11px;">E-Posta: ${d.mail} | Şifre: ${d.pass}</p>
+                    <button onclick="chP('${u}','pass')">Şifre Değiştir</button>
+                    <button style="margin-top:5px;" onclick="fF('${u}')">Fake Takipçi</button>
+                    <button style="margin-top:5px; background:${d.role=='admin'?'#444':'var(--green)'}" onclick="db.ref('users/${u}/role').set('${d.role=='admin'?'user':'admin'}'); alert('Yetki Değişti!')">${d.role=='admin'?'User Yap':'Admin Yap'}</button>
+                    <button style="margin-top:5px; background:${d.verified?'#444':'var(--blue)'}" onclick="db.ref('users/${u}/verified').set(!${d.verified||false})">Mavi Tık Ver/Al</button>
+                    <button style="background:var(--red); margin-top:5px;" onclick="ban('${u}')">🗑️ Üyeyi SİL</button>
+                </div>`;
+        });
+    }
+
+    function sendNoti(u, m) { db.ref('users/'+u).once('value', sn => { if(sn.val() && sn.val().notiSetting !== 'off' && u !== cur.user) db.ref('users/'+u+'/notifications').push({msg: m, t: Date.now()}); }); }
+    function updateNotiSetting() { db.ref('users/'+cur.user+'/notiSetting').set(document.getElementById('noti-setting').value); }
+    function loadNotifications() { db.ref('users/'+cur.user+'/notifications').on('value', sn => { const d = sn.val() || {}; let h = ""; Object.values(d).reverse().forEach(n => h += `<div style="background:#111; padding:12px; border-radius:15px; margin-bottom:10px; border-left:3px solid var(--blue); font-size:13px;">${n.msg}</div>`); document.getElementById('noti-list').innerHTML = h || "Bildirim yok."; }); }
+    function logout() { localStorage.removeItem('notUser'); location.reload(); }
+    function delPost(id) { if(confirm("Sil?")) db.ref('posts/'+id).remove(); }
     function ban(u) { if(confirm("Sil?")) db.ref('users/'+u).remove(); }
-    function register() { const u = document.getElementById('r-u').value.trim().toLowerCase(), m = document.getElementById('r-m').value.trim(), p = document.getElementById('r-p').value.trim(); db.ref('users/'+u).set({user:u, mail:m, pass:p, role:(u=='admin'?'admin':'user'), img:"https://cdn-icons-png.flaticon.com/512/149/149071.png"}).then(() => goAuth('login-p')); }
+    function chP(u, type) { const v = prompt("Yeni Değer:"); if(v) db.ref('users/'+u+'/'+type).set(v); }
+    function fF(u) { const v = prompt("Sayı:"); if(v) db.ref('users/'+u+'/fakeFollowers').set(v); }
     function nav(id, el, isMy = false) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-'+id).classList.add('active'); document.querySelectorAll('.nav-i').forEach(i => i.classList.remove('active')); el.classList.add('active'); if(id=='msg') closeChat(); if(isMy) viewProfile(cur.user); }
     function goAuth(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
     function toggleM() { document.getElementById('m-area').classList.toggle('hidden', document.getElementById('m-type').value == 'text'); }
-    function zoom(t, s) { document.getElementById('zoom').style.display='flex'; document.getElementById('z-in').innerHTML = t=='image' ? `<img src="${s}" style="max-width:90vw; max-height:90vh; border-radius:20px;">` : `<video src="${s}" controls autoplay style="max-width:90vw; border-radius:20px;"></video>`; }
+    function zoom(t, s) { document.getElementById('zoom').style.display='flex'; document.getElementById('z-in').innerHTML = t=='image' ? `<img src="${s}" style="max-width:90vw; max-height:90vh; border-radius:15px;">` : `<video src="${s}" style="max-width:90vw; border-radius:15px;" controls autoplay></video>`; }
+    function register() { const u = document.getElementById('r-u').value.trim().toLowerCase(), m = document.getElementById('r-m').value.trim(), p = document.getElementById('r-p').value.trim(); if(u && m && p) db.ref('users/'+u).set({user:u, mail:m, pass:p, role:'user', img:"https://cdn-icons-png.flaticon.com/512/149/149071.png"}).then(() => location.reload()); }
     async function save() {
-        const t = document.getElementById('nt-t').value, b = document.getElementById('nt-b').value, mode = document.getElementById('m-type').value, vis = document.getElementById('m-vis').value, file = document.getElementById('m-file').files[0];
-        if(!t) return alert("Başlık?");
-        const l = document.getElementById('loading'), f = document.getElementById('p-fill'), tx = document.getElementById('p-txt'); l.style.display = 'flex';
+        const t = document.getElementById('nt-t').value, b = document.getElementById('nt-b').value, mode = document.getElementById('m-type').value, file = document.getElementById('m-file').files[0];
+        if(!t) return alert("Başlık?"); const l = document.getElementById('loading'), f = document.getElementById('p-fill'); l.style.display = 'flex';
         let media = "", type = "text";
         if(mode == 'media' && file) {
             type = file.type.startsWith('image') ? 'image' : 'video';
-            media = await new Promise(res => { const r = new FileReader(); r.onprogress = e => { if(e.lengthComputable) { const p = Math.round((e.loaded/e.total)*100); f.style.width = p+'%'; tx.innerText = p+'%'; }}; r.onload = () => res(r.result); r.readAsDataURL(file); });
+            media = await new Promise(res => { const r = new FileReader(); r.onprogress = e => { if(e.lengthComputable) f.style.width = Math.round((e.loaded/e.total)*100)+'%'; }; r.onload = () => res(r.result); r.readAsDataURL(file); });
         }
-        db.ref('posts/'+Date.now()).set({t, b, type, vis, media, owner: cur.user, ownerImg: cur.img, up: 0, down: 0, votes: {}, comments: [], date: new Date().toLocaleString(), verified: cur.verified||false}).then(() => { l.style.display = 'none'; nav('home', document.querySelector('.nav-i')); });
+        db.ref('posts/'+Date.now()).set({t, b, type, media, owner: cur.user, ownerImg: cur.img, up: 0, comments: [], verified: cur.verified||false}).then(() => { l.style.display = 'none'; nav('home', document.querySelector('.nav-i')); });
     }
-    function forgot() { const u = document.getElementById('f-u').value.trim().toLowerCase(); db.ref('users/'+u).once('value', sn => { const d = sn.val(); if(d && d.mail) emailjs.send("service_tp5m5h7", "template_vfe3eyo", { to_email: d.mail, user_name: u, verify_code: "Şifreniz: " + d.pass }).then(() => alert("Mail atıldı!")); else alert("Hata!"); }); }
+    function updateMyPw() { const p = prompt("Yeni Şifre:"); if(p) db.ref('users/'+cur.user+'/pass').set(p).then(()=>alert("Şifre Değişti!")); }
+    function updateProfile(input) { const r = new FileReader(); r.onload = () => db.ref('users/'+cur.user+'/img').set(r.result).then(() => location.reload()); r.readAsDataURL(input.files[0]); }
+    function handleVote(pid) { db.ref('posts/'+pid+'/up').transaction(v => (v || 0) + 1); }
+    function addComment(id) { const m = prompt("Yorum:"); if(m) { db.ref('posts/'+id).once('value', sn => { const c = (sn.val() && sn.val().comments) || []; c.push({u:cur.user, m:m}); db.ref('posts/'+id+'/comments').set(c); }); } }
 </script>
 </body>
 </html>
