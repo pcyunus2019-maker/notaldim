@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>NotAldim | V76 Supernova</title>
+    <title>NotAldim | V77 Core Fix</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <style>
@@ -11,44 +11,33 @@
         :root { --blue: #0095f6; --bg: #000; --card: #121212; --border: #262626; --red: #ff3b30; --green: #2ecc71; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: var(--bg); color: white; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding-bottom: 85px; overflow-x: hidden; }
-        
         #loading { position:fixed; inset:0; background:rgba(0,0,0,0.98); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; }
-        .page { display: none; padding: 15px; max-width: 500px; margin: 0 auto; animation: fadeIn 0.4s ease; }
+        .page { display: none; padding: 15px; max-width: 500px; margin: 0 auto; animation: fadeIn 0.3s ease; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
-        
         .glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; margin-bottom: 20px; }
         input, textarea, select { width: 100%; background: #080808; border: 1px solid var(--border); padding: 14px; border-radius: 16px; color: white; margin-bottom: 12px; font-size: 14px; }
         button { width: 100%; background: var(--blue); border: none; border-radius: 16px; color: white; padding: 14px; font-weight: 800; cursor: pointer; }
-
-        /* Story Styles */
-        .story-bar { display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px; margin-bottom: 20px; scrollbar-width: none; border-bottom: 1px solid #222; }
+        .story-bar { display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px; margin-bottom: 15px; scrollbar-width: none; }
         .story-bar::-webkit-scrollbar { display: none; }
-        .story-circle { width: 66px; height: 66px; border-radius: 50%; border: 3px solid var(--blue); padding: 3px; object-fit: cover; cursor: pointer; }
-        
-        .note-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 15px; margin-bottom: 20px; }
+        .story-circle { width: 68px; height: 68px; border-radius: 50%; border: 3px solid var(--blue); padding: 3px; object-fit: cover; cursor: pointer; }
+        .note-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 15px; margin-bottom: 20px; position: relative; }
         .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; cursor: pointer; }
         .card-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue); }
         .social-btns { display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px; }
         .s-btn { cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 12px; background: #1a1a1a; border: 1px solid var(--border); }
-        
-        .comment-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-top: 8px; font-size: 13px; }
         .nav { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 18px 0; z-index: 1000; }
         .nav-i { font-size: 26px; cursor: pointer; opacity: 0.3; }
         .nav-i.active { opacity: 1; color: var(--blue); }
-
-        .verified-badge { color: var(--blue); margin-left: 4px; font-size: 14px; position: relative; cursor: help; }
-        .verified-badge:hover::after { content: "Onaylı Hesap"; position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; white-space: nowrap; }
-
-        #story-viewer { position:fixed; inset:0; background:#000; z-index:11000; display:none; flex-direction:column; align-items:center; justify-content:center; }
+        #story-viewer { position:fixed; inset:0; background:#000; z-index:11000; display:none; align-items:center; justify-content:center; }
         .hidden { display: none !important; }
-        .adm-btn { font-size: 12px; padding: 10px; margin-top: 5px; width: 100%; }
+        .comment-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-top: 8px; font-size: 13px; }
     </style>
 </head>
 <body>
 
-    <div id="loading">Yükleniyor...</div>
-    <div id="story-viewer" onclick="this.style.display='none'"><img id="st-img" style="max-width:100%; max-height:80vh; border-radius:15px;"></div>
+    <div id="loading" style="color:white; display:none; justify-content:center; align-items:center; position:fixed; inset:0; background:black; z-index:9999;">Paylaşılıyor...</div>
+    <div id="story-viewer" onclick="this.style.display='none'"><img id="st-img" style="max-width:100%; max-height:85vh; border-radius:15px;"></div>
 
     <div id="auth-area">
         <div id="login-p" class="page active">
@@ -56,8 +45,9 @@
                 <h1>NotAldim</h1>
                 <input type="text" id="l-u" placeholder="Kullanıcı Adı">
                 <input type="password" id="l-p" placeholder="Şifre">
+                <div style="margin-bottom:15px;"><input type="checkbox" id="l-rem" checked> Beni Hatırla</div>
                 <button onclick="login()">Giriş Yap</button>
-                <p onclick="goAuth('reg-p')" style="color:var(--blue); cursor:pointer; margin-top:20px;">Hesap Oluştur</p>
+                <p onclick="goAuth('reg-p')" style="color:var(--blue); cursor:pointer; margin-top:20px;">Kaydol</p>
             </div>
         </div>
         <div id="reg-p" class="page"><div class="glass-card"><h2>Kaydol</h2><input type="text" id="r-u" placeholder="Kullanıcı Adı"><input type="email" id="r-m" placeholder="E-Posta"><input type="password" id="r-p" placeholder="Şifre"><button onclick="register()">Kayıt Ol</button></div></div>
@@ -66,6 +56,14 @@
     <div id="app" class="hidden">
         <div id="page-home" class="page active"><h2>Akış</h2><div id="note-list"></div></div>
         
+        <div id="page-add" class="page">
+            <h2>Yeni Paylaşım</h2>
+            <select id="m-type" onchange="toggleM()"><option value="text">Sadece Yazı</option><option value="media">Fotoğraf / Video</option></select>
+            <input type="text" id="nt-t" placeholder="Başlık"><textarea id="nt-b" rows="4" placeholder="İçerik..."></textarea>
+            <div id="m-area" class="hidden"><input type="file" id="m-file"></div>
+            <button onclick="savePost()">Hemen Yayınla</button>
+        </div>
+
         <div id="page-search" class="page">
             <h2>Keşfet</h2>
             <div class="story-bar" id="search-story-list"></div>
@@ -73,7 +71,7 @@
             <div id="search-results"></div>
         </div>
 
-        <div id="page-msg" class="page"><h2>Mesajlar</h2><div id="chat-list"></div><div id="chat-box" class="hidden"><div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;"><span onclick="closeChat()" style="cursor:pointer; font-size:20px;">⬅</span><h3 id="chat-with-name"></h3></div><div id="chat-messages" style="height:400px; overflow-y:auto; background:#080808; padding:15px; border-radius:24px; display:flex; flex-direction:column;"></div><div style="display:flex; gap:10px;"><input id="msg-input" placeholder="Yaz..."><button onclick="sendMsg()" style="width:70px;">➤</button></div></div></div>
+        <div id="page-msg" class="page"><h2>Mesajlar</h2><div id="chat-list"></div><div id="chat-box" class="hidden"><div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;"><span onclick="closeChat()" style="cursor:pointer; font-size:20px;">⬅</span><h3 id="chat-with-name"></h3></div><div id="chat-messages" style="height:400px; overflow-y:auto; background:#080808; padding:15px; border-radius:24px; display:flex; flex-direction:column; margin-bottom:15px;"></div><div style="display:flex; gap:10px;"><input id="msg-input" placeholder="Yaz..."><button onclick="sendMsg()">➤</button></div></div></div>
         
         <div id="page-admin" class="page"><h2>🛡️ Admin</h2><div id="ad-users-list"></div><div id="ad-user-detail" class="hidden glass-card"></div></div>
 
@@ -86,11 +84,11 @@
                     <div onclick="showUsersList('following')" style="cursor:pointer;"><b>Takip</b><br><span id="p-following">0</span></div>
                 </div>
                 <div id="my-prof-actions" class="hidden">
-                    <button onclick="document.getElementById('st-file').click()" style="background:var(--green); margin-bottom:10px;">📸 Hikaye Paylaş</button>
+                    <button onclick="document.getElementById('st-file').click()" style="background:var(--green); margin-bottom:10px;">📸 Hikaye Ekle</button>
                     <input type="file" id="st-file" class="hidden" onchange="uploadStory(this)">
                     <button onclick="logout()" style="background:var(--red);">Güvenli Çıkış</button>
                 </div>
-                <div id="other-prof-actions" class="hidden"><button id="follow-btn" onclick="handleFollowAction()">Takip Et</button><button onclick="openChatFromProf()" style="background:#222; margin-top:10px;">Mesaj Gönder</button></div>
+                <div id="other-prof-actions" class="hidden"><button id="follow-btn" onclick="handleFollowAction()">Takip Et</button></div>
             </div>
             <div id="list-modal" class="hidden glass-card" style="position:relative;"><span onclick="this.parentElement.classList.add('hidden')" style="position:absolute; right:15px; top:15px; cursor:pointer;">✖</span><div id="modal-content"></div></div>
         </div>
@@ -98,6 +96,7 @@
         <div class="nav">
             <div class="nav-i active" onclick="nav('home', this)">🏠</div>
             <div class="nav-i" onclick="nav('search', this)">🔍</div>
+            <div class="nav-i" onclick="nav('add', this)">➕</div>
             <div class="nav-i" onclick="nav('msg', this)">💬</div>
             <div id="nav-ad" class="nav-i hidden" onclick="nav('admin', this)">🛡️</div>
             <div class="nav-i" onclick="nav('prof', this, true)">👤</div>
@@ -117,11 +116,11 @@
     };
 
     function login() {
-        const u = document.getElementById('l-u').value.trim().toLowerCase(), p = document.getElementById('l-p').value.trim();
+        const u = document.getElementById('l-u').value.trim().toLowerCase(), p = document.getElementById('l-p').value.trim(), rem = document.getElementById('l-rem').checked;
         db.ref('users/'+u).once('value', sn => {
             const d = sn.val();
-            if(d && d.banned) return alert("Hesabınız Banlandı!");
-            if(d && d.pass == p){ cur = d; localStorage.setItem('notUser', u); startApp(); } else alert("Hata!");
+            if(d && d.banned) return alert("Banlandınız!");
+            if(d && d.pass == p){ cur = d; if(rem) localStorage.setItem('notUser', u); startApp(); } else alert("Hata!");
         });
     }
 
@@ -140,19 +139,32 @@
         loadFeed(); loadChatList(); doSearch(""); loadStories();
     }
 
+    function savePost() {
+        const t = document.getElementById('nt-t').value, b = document.getElementById('nt-b').value, file = document.getElementById('m-file').files[0];
+        if(!t) return alert("Başlık gir!");
+        document.getElementById('loading').style.display='flex';
+        let media = "";
+        const complete = (m) => {
+            db.ref('posts/'+Date.now()).set({t, b, media:m, owner:cur.user, ownerImg:cur.img, up:0, down:0, votes:{}, comments:{}, verified:cur.verified||false}).then(()=>location.reload());
+        };
+        if(file) {
+            const r = new FileReader(); r.onload = () => complete(r.result); r.readAsDataURL(file);
+        } else complete("");
+    }
+
     function loadFeed() {
         db.ref('posts').on('value', sn => {
             const data = sn.val() || {}; let h = "";
             Object.keys(data).reverse().forEach(id => {
-                const p = data[id]; const myV = (p.votes && p.votes[cur.user]) ? p.votes[cur.user] : null;
-                const vTag = p.verified ? '<span class="verified-badge">✔</span>' : '';
+                const p = data[id];
                 h += `<div class="note-card">
-                    <div class="card-header" onclick="viewProfile('${p.owner}')"><img src="${p.ownerImg}" class="chat-img"><b>${p.owner}</b>${vTag}</div>
-                    <p>${p.b}</p>
+                    ${(p.owner==cur.user || cur.role=='admin') ? `<span style="position:absolute;top:15px;right:15px;color:red;font-size:10px;" onclick="if(confirm('Sil?')) db.ref('posts/${id}').remove()">SİL</span>` : ''}
+                    <div class="card-header" onclick="viewProfile('${p.owner}')"><img src="${p.ownerImg}" class="card-img"><b>${p.owner}</b></div>
+                    <p><b>${p.t}</b><br>${p.b}</p>
+                    ${p.media ? `<img src="${p.media}" style="width:100%; border-radius:15px; margin-top:10px;">` : ''}
                     <div class="social-btns">
-                        <span class="s-btn ${myV=='up'?'voted-up':''}" onclick="handleVote('${id}','up')">👍 ${p.up||0}</span>
-                        <span class="s-btn ${myV=='down'?'voted-down':''}" onclick="handleVote('${id}','down')">👎 ${p.down||0}</span>
-                        <span class="s-btn" onclick="addComment('${id}')">💬 Yorum</span>
+                        <span class="s-btn" onclick="handleVote('${id}','up')">👍 ${p.up||0}</span>
+                        <span class="s-btn" onclick="addComment('${id}')">💬 Yorum Yap</span>
                     </div>
                     <div id="comm-${id}">${(p.comments ? Object.values(p.comments) : []).map(c=>`<div class="comment-item"><b>${c.u}:</b> ${c.m}</div>`).join('')}</div>
                 </div>`;
@@ -161,16 +173,28 @@
         });
     }
 
+    function manageOmega(u) {
+        db.ref('users/'+u).once('value', sn => {
+            const d = sn.val(); document.getElementById('ad-user-detail').classList.remove('hidden');
+            document.getElementById('ad-user-detail').innerHTML = `<div style="text-align:center;">
+                <h3>${u} Yönetimi</h3>
+                <button onclick="admUp('${u}','user')">👤 Kullanıcı Adı Değiştir</button>
+                <button style="margin-top:5px;" onclick="admUp('${u}','mail')">📧 Mail Değiştir</button>
+                <button style="margin-top:5px;" onclick="admUp('${u}','pass')">🔑 Şifre Değiştir</button>
+                <button style="margin-top:5px;" onclick="admUp('${u}','fakeFollowers')">📈 Fake Takipçi</button>
+                <button style="margin-top:5px; background:#444;" onclick="db.ref('users/${u}/fakeFollowers').remove()">🔄 Normal Sayıya Dön</button>
+                <button style="margin-top:5px; background:var(--green)" onclick="db.ref('users/${u}/verified').set(true)">✔ Mavi Tık Ver</button>
+                <button style="margin-top:5px; background:var(--red)" onclick="db.ref('users/${u}/verified').set(false)">✖ Mavi Tık Al</button>
+                <button style="margin-top:5px; background:orange" onclick="db.ref('users/${u}/banned').set(!${d.banned||false})">BAN DURUMU</button>
+                <button style="margin-top:5px; background:var(--red)" onclick="if(confirm('Üyeyi sil?')) db.ref('users/${u}').remove()">SİL (TAMAMEN)</button>
+            </div>`;
+        });
+    }
+
     function doSearch(val) {
         db.ref('users').once('value', sn => {
             const users = sn.val(); let h = "";
-            for(let u in users) {
-                if(u.includes(val.toLowerCase())) {
-                    h += `<div class="glass-card" style="display:flex;align-items:center;gap:15px;padding:12px;margin-bottom:10px;cursor:pointer;" onclick="viewProfile('${u}')">
-                        <img src="${users[u].img}" style="width:40px;height:40px;border-radius:50%;">${u}
-                    </div>`;
-                }
-            }
+            for(let u in users) if(u.includes(val.toLowerCase())) h += `<div class="glass-card" onclick="viewProfile('${u}')">${u}</div>`;
             document.getElementById('search-results').innerHTML = h;
         });
     }
@@ -178,92 +202,24 @@
     function loadStories() {
         db.ref('stories').on('value', sn => {
             const stories = sn.val() || {}; let h = "";
-            for(let u in stories) {
-                h += `<div class="story-item" onclick="viewStory('${u}')"><img src="${stories[u].img}" class="story-circle"></div>`;
-            }
+            for(let u in stories) h += `<div onclick="viewStory('${u}')"><img src="${stories[u].img}" class="story-circle"></div>`;
             document.getElementById('search-story-list').innerHTML = h;
         });
     }
 
     function viewStory(u) { db.ref('stories/'+u).once('value', sn => { document.getElementById('story-viewer').style.display='flex'; document.getElementById('st-img').src=sn.val().img; }); }
-
-    async function uploadStory(input) {
-        const file = input.files[0]; if(!file) return;
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            await db.ref('stories/'+cur.user).set({img: e.target.result, time: Date.now()});
-            alert("Paylaşıldı!");
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function loadAdminUsers() {
-        db.ref('users').on('value', sn => {
-            const us = sn.val(); let h = "<h3>Üye Listesi</h3>";
-            for(let u in us) h += `<div class="s-btn" style="margin-bottom:5px;justify-content:space-between;" onclick="manageOmega('${u}')"><b>${u}</b> <span>${us[u].role}</span></div>`;
-            document.getElementById('ad-users-list').innerHTML = h;
-        });
-    }
-
-    function manageOmega(u) {
-        db.ref('users/'+u).once('value', sn => {
-            const d = sn.val(); document.getElementById('ad-user-detail').classList.remove('hidden');
-            document.getElementById('ad-user-detail').innerHTML = `<div style="text-align:center;">
-                <h3>${u}</h3><p>Şifre: ${d.pass} | Mail: ${d.mail}</p>
-                <button class="adm-btn" onclick="admUp('${u}','pass')">Şifre Değiştir</button>
-                <button class="adm-btn" onclick="admUp('${u}','fakeFollowers')">Fake Takipçi</button>
-                <button class="adm-btn" style="background:var(--green)" onclick="db.ref('users/${u}/verified').set(true)">Mavi Tık Ver</button>
-                <button class="adm-btn" style="background:var(--red)" onclick="db.ref('users/${u}/verified').set(false)">Mavi Tık Al</button>
-                <button class="adm-btn" style="background:orange" onclick="db.ref('users/${u}/banned').set(!${d.banned||false})">Banla/Kaldır</button>
-                <button class="adm-btn" style="background:var(--red)" onclick="if(confirm('Üyeyi sil?')) db.ref('users/${u}').remove()">SİL (TAMAMEN)</button>
-            </div>`;
-        });
-    }
-
-    function admUp(u, t) { const v = prompt("Yeni Değer:"); if(v) db.ref('users/'+u+'/'+t).set(v); }
+    async function uploadStory(input) { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = async (e) => { await db.ref('stories/'+cur.user).set({img: e.target.result, time: Date.now()}); location.reload(); }; r.readAsDataURL(f); }
+    function loadAdminUsers() { db.ref('users').on('value', sn => { const us = sn.val(); let h = ""; for(let u in us) h += `<div class="s-btn" onclick="manageOmega('${u}')">${u}</div>`; document.getElementById('ad-users-list').innerHTML = h; }); }
+    function admUp(u, t) { const v = prompt("Yeni Değer:"); if(v) { if(t=='user') { db.ref('users/'+u).once('value', sn => { db.ref('users/'+v).set(sn.val()).then(() => db.ref('users/'+u).remove()); }); } else db.ref('users/'+u+'/'+t).set(v); } }
+    function handleVote(pid, type) { db.ref('posts/'+pid).transaction(p => { if(!p) return p; if(!p.votes) p.votes = {}; const old = p.votes[cur.user]; if(old === type){ delete p.votes[cur.user]; p.up = Math.max(0, (p.up||1)-1); } else { p.votes[cur.user] = type; p.up = (p.up||0)+1; } return p; }); }
+    function addComment(id) { const m = prompt("Yorumun:"); if(m) db.ref('posts/'+id+'/comments').push({u:cur.user, m:m}); }
+    function viewProfile(u) { viewU = u; nav('prof', document.querySelector('.nav-i[onclick*="prof"]')); db.ref('users/'+u).on('value', sn => { const d = sn.val(); if(!d) return; document.getElementById('p-u-name').innerText = u; document.getElementById('p-u-img').src = d.img; document.getElementById('p-followers').innerText = d.fakeFollowers || (d.followers ? Object.keys(d.followers).length : 0); document.getElementById('p-following').innerText = d.following ? Object.keys(d.following).length : 0; if(u == cur.user) document.getElementById('my-prof-actions').classList.remove('hidden'); else { document.getElementById('my-prof-actions').classList.add('hidden'); document.getElementById('other-prof-actions').classList.remove('hidden'); document.getElementById('follow-btn').innerText = (d.followers && d.followers[cur.user]) ? "Takibi Bırak" : "Takip Et"; } }); }
+    function handleFollowAction() { const rf = db.ref('users/'+viewU+'/followers/'+cur.user), ri = db.ref('users/'+cur.user+'/following/'+viewU); rf.once('value', sn => { if(sn.exists()){ rf.remove(); ri.remove(); } else { rf.set(true); ri.set(true); } }); }
+    function nav(id, el, isMy = false) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('page-'+id).classList.add('active'); document.querySelectorAll('.nav-i').forEach(i => i.classList.remove('active')); el.classList.add('active'); if(isMy) viewProfile(cur.user); }
+    function toggleM() { document.getElementById('m-area').classList.toggle('hidden', document.getElementById('m-type').value == 'text'); }
     function logout() { localStorage.removeItem('notUser'); location.reload(); }
-    function closeChat() { document.getElementById('chat-box').classList.add('hidden'); document.getElementById('chat-list').classList.remove('hidden'); }
-    function openChatFromProf() { openActiveChat(viewU); nav('msg', document.querySelector('.nav-i[onclick*="msg"]')); }
-    function sendMsg() { const i = document.getElementById('msg-input'); if(!i.value || !activeChat) return; db.ref('chats/'+activeChat).push({u:cur.user, m:i.value, t:Date.now(), seen:false}); i.value = ""; }
-    function openActiveChat(other) {
-        activeChat = [cur.user, other].sort().join('_');
-        document.getElementById('chat-list').classList.add('hidden'); document.getElementById('chat-box').classList.remove('hidden');
-        document.getElementById('chat-with-name').innerText = other;
-        db.ref('chats/'+activeChat).on('value', sn => {
-            const ms = sn.val() || {}; let h = "";
-            Object.keys(ms).forEach(mid => {
-                const m = ms[mid]; const isMe = m.u === cur.user;
-                if(!isMe && !m.seen) db.ref('chats/'+activeChat+'/'+mid+'/seen').set(true);
-                const status = isMe ? (m.seen ? '<span style="color:#00faff">✓✓</span>' : '✓') : '';
-                h += `<div style="margin-bottom:10px; align-self:${isMe?'flex-end':'flex-start'}; background:${isMe? 'var(--blue)':'#262626'}; padding:10px 16px; border-radius:18px;">
-                    ${m.m} <div style="font-size:8px; opacity:0.6; text-align:right;">${status} - ${m.u}</div>
-                </div>`;
-            });
-            const b = document.getElementById('chat-messages'); b.innerHTML = h; b.scrollTop = b.scrollHeight;
-        });
-    }
+    function goAuth(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
     function loadChatList() { db.ref('chats').on('value', sn => { const cs = sn.val() || {}; let h = ""; Object.keys(cs).forEach(cid => { if(cid.includes(cur.user)) { const other = cid.replace(cur.user,'').replace('_',''); h += `<div class="glass-card" onclick="openActiveChat('${other}')">💬 ${other}</div>`; document.getElementById('chat-list').innerHTML = h; }}); }); }
-    function addComment(id) { const m = prompt("Yorum:"); if(m) db.ref('posts/'+id+'/comments').push({u:cur.user, m:m}); }
-    function handleVote(pid, type) { db.ref('posts/'+pid).transaction(p => { if(!p) return p; if(!p.votes) p.votes = {}; const old = p.votes[cur.user]; if(old === type){ delete p.votes[cur.user]; p[type] = Math.max(0, (p[type]||1)-1); } else { if(old) p[old] = Math.max(0, (p[old]||1)-1); p.votes[cur.user] = type; p[type] = (p[type]||0)+1; } return p; }); }
-    function viewProfile(u) {
-        viewU = u; nav('prof', document.querySelector('.nav-i[onclick*="prof"]'));
-        db.ref('users/'+u).on('value', sn => {
-            const d = sn.val(); if(!d) return;
-            document.getElementById('p-u-name').innerHTML = u + (d.verified ? '<span class="verified-badge">✔</span>' : '');
-            document.getElementById('p-u-img').src = d.img;
-            document.getElementById('p-followers').innerText = d.fakeFollowers || (d.followers ? Object.keys(d.followers).length : 0);
-            document.getElementById('p-following').innerText = d.following ? Object.keys(d.following).length : 0;
-            if(u == cur.user) document.getElementById('my-prof-actions').classList.remove('hidden');
-            else { document.getElementById('my-prof-actions').classList.add('hidden'); document.getElementById('other-prof-actions').classList.remove('hidden'); }
-        });
-    }
-    function nav(id, el, isMy = false) { 
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
-        document.getElementById('page-'+id).classList.add('active'); 
-        document.querySelectorAll('.nav-i').forEach(i => i.classList.remove('active')); 
-        el.classList.add('active'); 
-        if(isMy) viewProfile(cur.user); 
-    }
 </script>
 </body>
 </html>
